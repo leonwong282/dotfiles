@@ -1,0 +1,100 @@
+# ~/.zshrc - Interactive shell configuration
+# Loaded for every new terminal window
+
+# ============================================
+# Environment Variables
+# ============================================
+
+# Default editors
+export EDITOR="vim"   # Or nvim, vim, nano
+export VISUAL="$EDITOR"
+
+# Language and locale
+export LANG="en_US.UTF-8"
+export LC_ALL="en_US.UTF-8"
+
+# History settings
+export HISTSIZE=10000
+export SAVEHIST=10000
+export HISTFILE="$HOME/.zsh_history"
+
+# Less pager settings
+export LESS="-R"              # Enable color in less
+export PAGER="less"
+
+
+# ============================================
+# Aliases
+# ============================================
+
+# Quick directory navigation
+alias ..='cd ..'
+alias ...='cd ../..'
+alias ....='cd ../../..'
+alias ~='cd ~'
+
+# List files with details
+alias ll='ls -la'
+alias la='ls -A'
+alias l='ls -CF'
+
+# Git shortcuts
+alias gs='git status'
+alias ga='git add'
+alias gc='git commit'
+alias gp='git push'
+alias gl='git pull'
+alias gd='git diff'
+alias gco='git checkout'
+alias gb='git branch'
+alias glog='git log --oneline --graph --decorate'
+
+# Confirm before overwriting
+alias cp='cp -i'
+alias mv='mv -i'
+alias rm='rm -i'
+
+# Use modern tools if installed
+alias cat='bat'           # bat: cat with syntax highlighting
+alias ls='eza'             # eza: modern ls
+alias find='fd'            # fd: modern find
+alias grep='rg'            # ripgrep: fast grep
+
+# Show PATH entries one per line
+alias path='echo $PATH | tr ":" "\n"'
+
+# Get public IP
+alias myip='curl ifconfig.me'
+
+# Clear terminal
+alias c='clear'
+
+# Edit and reload zshrc
+alias zshconfig='vim ~/.zshrc'
+alias reload='source ~/.zshrc'
+
+# ============================================
+# Functions
+# ============================================
+
+# Create directory and cd into it
+mkcd() {
+    mkdir -p "$1" && cd "$1"
+}
+
+# Quick git commit
+gcm() {
+    git add -A && git commit -m "$*"
+}
+
+# ============================================
+# Prompt (optional - or use Starship)
+# ============================================
+# Basic prompt showing directory and git branch
+# autoload -Uz vcs_info
+# precmd() { vcs_info }
+# PROMPT='%F{blue}%~%f %F{green}${vcs_info_msg_0_}%f $ '
+
+# Or use Starship prompt:
+# eval "$(starship init zsh)"
+
