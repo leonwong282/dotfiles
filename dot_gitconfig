@@ -1,0 +1,52 @@
+[user]
+    name = Leon
+    email = leonwong282@gmail.com
+
+[init]
+    defaultBranch = main
+
+[core]
+    editor = code --wait
+    autocrlf = input          # Unix line endings
+    excludesfile = ~/.gitignore_global
+
+[color]
+    ui = auto
+
+[pull]
+    rebase = false            # Or: true for rebase workflow
+
+[push]
+    default = current         # Push current branch
+    autoSetupRemote = true    # Auto set upstream
+
+[fetch]
+    prune = true              # Remove deleted remote branches
+
+[diff]
+    tool = vscode
+
+[difftool "vscode"]
+    cmd = code --wait --diff $LOCAL $REMOTE
+
+[merge]
+    tool = vscode
+    conflictstyle = diff3     # Show base in conflicts
+
+[mergetool "vscode"]
+    cmd = code --wait $MERGED
+
+[alias]
+    st = status
+    co = checkout
+    br = branch
+    ci = commit
+    lg = log --oneline --graph --decorate --all
+    unstage = reset HEAD --
+    last = log -1 HEAD
+    amend = commit --amend --no-edit
+    undo = reset --soft HEAD~1
+    aliases = config --get-regexp alias
+
+[credential]
+    helper = osxkeychain      # macOS keychain

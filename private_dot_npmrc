@@ -1,0 +1,12 @@
+strict-ssl=false
+
+# Default save behavior
+save-exact=true           # Save exact versions
+
+# Init defaults
+init-author-name=Leon
+init-author-email=leonwong282@gmail.com
+init-license=GPL
+
+# Registry (default)
+registry=https://registry.npmjs.org/

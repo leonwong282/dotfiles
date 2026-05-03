@@ -1,0 +1,29 @@
+# ============================================
+# Global defaults (apply to all hosts)
+# ============================================
+Host *
+    AddKeysToAgent yes
+    UseKeychain yes              # macOS keychain
+    IdentityFile ~/.ssh/id_ed25519
+    ServerAliveInterval 60
+    ServerAliveCountMax 3
+
+# ============================================
+# GitHub
+# ============================================
+Host ssh.github.com
+    HostName ssh.github.com
+    Port 443
+    User git
+    IdentityFile ~/.ssh/id_ed25519
+    IdentitiesOnly yes
+    
+# ============================================
+# Personal servers
+# ============================================
+Host myserver
+    HostName 192.168.1.100
+    User leon
+    Port 22
+    IdentityFile ~/.ssh/id_ed25519
+
