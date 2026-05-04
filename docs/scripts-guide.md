@@ -104,7 +104,7 @@ scripts/bootstrap.sh --apply
 ```
 
 Restart the terminal after the first apply so the managed zsh files and PATH are
-loaded.
+loaded. Finally, complete the manual steps in [docs/post-setup.md](post-setup.md).
 
 ## Routine Maintenance Flow
 

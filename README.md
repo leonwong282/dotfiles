@@ -16,6 +16,8 @@ chezmoi init --apply https://github.com/leonwong282/dotfiles.git
 
 After the first apply, restart the terminal so `.zprofile` and `.zshrc` are loaded from the managed files.
 
+Then, follow the [Post-Setup Guide](docs/post-setup.md) to complete your manual configuration (secrets, SSH keys, etc.).
+
 ## Daily workflow
 
 Preview changes before applying:
