@@ -1,0 +1,206 @@
+#!/usr/bin/env bash
+set -euo pipefail
+
+DRY_RUN=0
+BACKUP_BASE="${HOME}/.local/state/dotfiles-backups"
+TIMESTAMP="$(date '+%Y%m%d-%H%M%S')"
+BACKUP_DIR="${BACKUP_BASE}/${TIMESTAMP}"
+BACKED_UP=()
+SKIPPED=()
+
+usage() {
+  cat <<'EOF'
+Usage: backup-dotfiles [--dry-run] [--help]
+
+Create a lightweight pre-change snapshot of important local dotfiles.
+
+Backups are written under:
+  $HOME/.local/state/dotfiles-backups/YYYYMMDD-HHMMSS
+
+This is a conservative helper, not a full backup solution. It does not delete,
+compress, upload, or print file contents.
+EOF
+}
+
+log_info() {
+  printf '[INFO] %s\n' "$*"
+}
+
+log_warn() {
+  printf '[WARN] %s\n' "$*" >&2
+}
+
+die() {
+  printf '[ERROR] %s\n' "$*" >&2
+  exit 1
+}
+
+has_command() {
+  command -v "$1" >/dev/null 2>&1
+}
+
+record_backed_up() {
+  BACKED_UP+=("$1")
+}
+
+record_skipped() {
+  SKIPPED+=("$1")
+}
+
+print_summary() {
+  local item
+
+  printf '\nBacked up:\n'
+  if ((${#BACKED_UP[@]} == 0)); then
+    printf '  none\n'
+  else
+    for item in "${BACKED_UP[@]}"; do
+      printf '  %s\n' "$item"
+    done
+  fi
+
+  printf '\nSkipped:\n'
+  if ((${#SKIPPED[@]} == 0)); then
+    printf '  none\n'
+  else
+    for item in "${SKIPPED[@]}"; do
+      printf '  %s\n' "$item"
+    done
+  fi
+}
+
+copy_file() {
+  local src="$1"
+  local dst="$2"
+
+  if ((DRY_RUN)); then
+    record_backed_up "${src} -> ${dst} (dry run)"
+    return 0
+  fi
+
+  if cp -p "$src" "$dst"; then
+    record_backed_up "${src} -> ${dst}"
+  else
+    die "failed to copy file: ${src}"
+  fi
+}
+
+copy_dir() {
+  local src="$1"
+  local dst="$2"
+
+  if ((DRY_RUN)); then
+    record_backed_up "${src} -> ${dst} (dry run)"
+    return 0
+  fi
+
+  if has_command rsync; then
+    mkdir -p "$dst"
+    if rsync -a --safe-links \
+      --exclude '.DS_Store' \
+      --exclude 'Cache' \
+      --exclude 'Caches' \
+      --exclude 'cache' \
+      --exclude 'CachedData' \
+      --exclude 'logs' \
+      --exclude 'node_modules' \
+      --exclude '__pycache__' \
+      "$src/" "$dst/"; then
+      record_backed_up "${src} -> ${dst}"
+    else
+      die "failed to copy directory with rsync: ${src}"
+    fi
+  else
+    log_warn "rsync not found; using cp -Rp for ${src} without cache excludes"
+    if cp -Rp "$src" "${dst%/*}/"; then
+      record_backed_up "${src} -> ${dst} (cp fallback)"
+    else
+      die "failed to copy directory: ${src}"
+    fi
+  fi
+}
+
+backup_path() {
+  local src="$1"
+  local name
+  local dst
+
+  name="${src##*/}"
+  dst="${BACKUP_DIR}/${name}"
+
+  if [[ ! -e "$src" && ! -L "$src" ]]; then
+    record_skipped "${src} (missing)"
+    return 0
+  fi
+
+  if [[ -L "$src" ]]; then
+    record_skipped "${src} (symlink; not followed)"
+    return 0
+  fi
+
+  if [[ -f "$src" ]]; then
+    copy_file "$src" "$dst"
+  elif [[ -d "$src" ]]; then
+    copy_dir "$src" "$dst"
+  else
+    record_skipped "${src} (not a regular file or directory)"
+  fi
+}
+
+main() {
+  local target
+
+  while (($# > 0)); do
+    case "$1" in
+      --dry-run)
+        DRY_RUN=1
+        ;;
+      -h | --help)
+        usage
+        return 0
+        ;;
+      *)
+        usage >&2
+        return 2
+        ;;
+    esac
+    shift
+  done
+
+  log_info "Dotfiles backup snapshot"
+
+  if [[ -e "$BACKUP_DIR" ]]; then
+    die "backup directory already exists: ${BACKUP_DIR}"
+  fi
+
+  if ((DRY_RUN)); then
+    log_info "Dry run: would create ${BACKUP_DIR}"
+  else
+    umask 077
+    mkdir -p "$BACKUP_DIR"
+    chmod 700 "$BACKUP_DIR"
+    log_info "Created ${BACKUP_DIR}"
+  fi
+
+  for target in \
+    "$HOME/.zshrc" \
+    "$HOME/.bashrc" \
+    "$HOME/.bash_profile" \
+    "$HOME/.profile" \
+    "$HOME/.gitconfig" \
+    "$HOME/.vimrc" \
+    "$HOME/.config"
+  do
+    backup_path "$target"
+  done
+
+  print_summary
+
+  if ((DRY_RUN)); then
+    log_info "Dry run complete; no files were created or copied."
+  else
+    log_info "Backup complete: ${BACKUP_DIR}"
+  fi
+}
+
+main "$@"

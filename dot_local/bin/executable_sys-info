@@ -1,0 +1,152 @@
+#!/usr/bin/env bash
+set -euo pipefail
+
+usage() {
+  cat <<'EOF'
+Usage: sys-info [--help]
+
+Print concise system information useful for debugging dotfiles issues.
+
+This command is read-only. Missing tools are reported as missing.
+EOF
+}
+
+has_command() {
+  command -v "$1" >/dev/null 2>&1
+}
+
+first_output_line() {
+  local output
+
+  output="$("$@" 2>/dev/null || true)"
+  output="${output%%$'\n'*}"
+  printf '%s' "$output"
+}
+
+print_kv() {
+  local key="$1"
+  local value="$2"
+
+  printf '%-18s %s\n' "${key}:" "$value"
+}
+
+os_description() {
+  local name=""
+  local version=""
+  local build=""
+  local key
+  local value
+
+  if has_command sw_vers; then
+    name="$(sw_vers -productName 2>/dev/null || true)"
+    version="$(sw_vers -productVersion 2>/dev/null || true)"
+    build="$(sw_vers -buildVersion 2>/dev/null || true)"
+    printf '%s %s%s\n' "${name:-macOS}" "${version:-unknown}" "${build:+ (${build})}"
+    return 0
+  fi
+
+  if [[ -r /etc/os-release ]]; then
+    while IFS='=' read -r key value; do
+      value="${value%\"}"
+      value="${value#\"}"
+      case "$key" in
+        NAME) name="$value" ;;
+        VERSION_ID) version="$value" ;;
+      esac
+    done </etc/os-release
+    printf '%s %s\n' "${name:-Linux}" "${version:-unknown}"
+    return 0
+  fi
+
+  uname -s 2>/dev/null || printf 'unknown\n'
+}
+
+tool_status() {
+  local label="$1"
+  local cmd="$2"
+  shift 2
+  local path
+  local version
+
+  if ! has_command "$cmd"; then
+    print_kv "$label" "missing"
+    return 0
+  fi
+
+  path="$(command -v "$cmd")"
+  version="$(first_output_line "$@")"
+  [[ -n "$version" ]] || version="available"
+
+  print_kv "$label" "${version} (${path})"
+}
+
+python_status() {
+  if has_command python3; then
+    tool_status "Python" python3 python3 --version
+  elif has_command python; then
+    tool_status "Python" python python --version
+  else
+    print_kv "Python" "missing"
+  fi
+}
+
+path_summary() {
+  local old_ifs="$IFS"
+  local entries=()
+  local count=0
+  local entry
+  local first="empty"
+
+  IFS=':'
+  read -r -a entries <<<"${PATH:-}"
+  IFS="$old_ifs"
+
+  for entry in "${entries[@]}"; do
+    [[ -n "$entry" ]] || continue
+    count=$((count + 1))
+  done
+
+  if ((${#entries[@]} > 0)) && [[ -n "${entries[0]}" ]]; then
+    first="${entries[0]}"
+  fi
+
+  print_kv "PATH entries" "$count"
+  print_kv "PATH first" "$first"
+
+  case ":${PATH:-}:" in
+    *":$HOME/.local/bin:"*) print_kv "PATH local bin" "present" ;;
+    *) print_kv "PATH local bin" "missing" ;;
+  esac
+}
+
+main() {
+  case "${1:-}" in
+    -h | --help)
+      usage
+      return 0
+      ;;
+    "")
+      ;;
+    *)
+      usage >&2
+      return 2
+      ;;
+  esac
+
+  print_kv "OS" "$(os_description)"
+  print_kv "Kernel" "$(uname -s 2>/dev/null || printf 'unknown') $(uname -r 2>/dev/null || printf 'unknown')"
+  print_kv "Architecture" "$(uname -m 2>/dev/null || printf 'unknown')"
+  print_kv "Shell" "${SHELL:-unknown}"
+  print_kv "User" "$(id -un 2>/dev/null || printf '%s' "${USER:-unknown}")"
+  print_kv "Home" "${HOME:-unknown}"
+  tool_status "Git" git git --version
+  tool_status "Chezmoi" chezmoi chezmoi --version
+  tool_status "Homebrew" brew brew --version
+  tool_status "Vim" vim vim --version
+  tool_status "VS Code CLI" code code --version
+  python_status
+  tool_status "Node" node node --version
+  path_summary
+}
+
+main "$@"
