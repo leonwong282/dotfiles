@@ -126,6 +126,7 @@ cask "claude-code"      # Interactive CLI for Claude
 cask "codex-app"        # AI code generation companion
 cask "qt-creator"       # Integrated development environment for Qt
 cask "mactex-no-gui"    # TeX distribution for macOS (minimal)
+cask "docker-desktop"  # GUI for managing Docker containers and images
 
 # ====================
 # Browsers

@@ -5,14 +5,21 @@ Personal macOS dotfiles managed by [chezmoi](https://www.chezmoi.io/).
 ## Fresh macOS bootstrap
 
 ```zsh
+# 1. Install Xcode Command Line Tools
 xcode-select --install
 
+# 2. Install Homebrew
 /bin/bash -c "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/HEAD/install.sh)"
 eval "$(/opt/homebrew/bin/brew shellenv)"
 
+# 3. Install Git & Chezmoi
 brew install git chezmoi
-chezmoi init --apply https://github.com/leonwong282/dotfiles.git
+
+# 4. Initialize dotfiles AND install all software from Brewfile
+DOTFILES_RUN_HOMEBREW_BUNDLE=1 chezmoi init --apply https://github.com/leonwong282/dotfiles.git
 ```
+
+> **Note**: The `DOTFILES_RUN_HOMEBREW_BUNDLE=1` flag is required to trigger the automatic installation of all applications listed in the `Brewfile`. Without it, only configuration files will be applied.
 
 After the first apply, restart the terminal so `.zprofile` and `.zshrc` are loaded from the managed files.
 
