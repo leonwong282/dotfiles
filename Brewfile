@@ -1,120 +1,187 @@
-# ~/Brewfile
+# Brewfile
+# Target: Apple Silicon M1 MacBook Air, macOS Sequoia
+# Usage:
+#   HOMEBREW_BUNDLE_NO_UPGRADE=1 brew bundle --file Brewfile
+#
+# Notes:
+# - Keep versioned databases/runtimes pinned only when project compatibility needs it.
+# - GUI apps and experimental AI tools are separated from core CLI tools.
+# - `homebrew/cask-fonts` is intentionally omitted because fonts now live in homebrew/cask.
+
+# ====================
+# Global Cask Settings
+# ====================
+cask_args appdir: "/Applications"
 
 # ====================
 # Taps
 # ====================
-tap "homebrew/cask-fonts"
-tap "homebrew/services"
-tap "leonwong282/tap"           # Personal tap for specific formulas
-tap "stripe/stripe-cli"         # Official Stripe CLI repository
+tap "stripe/stripe-cli" # Official Stripe CLI tap
 
 # ====================
-# CLI Tools - Essential
+# Bootstrap & Package Management
 # ====================
-brew "git"              # Version control
-brew "gh"
-brew "zsh"              # Shell
-brew "curl"             # Transfer data
-brew "wget"             # Download utility
-brew "chezmoi"          # Manage your dotfiles across multiple machines
-brew "mas"              # Mac App Store CLI for Brewfile mas entries
+brew "chezmoi"          # Dotfiles manager
+brew "mas"              # Mac App Store CLI
+brew "gh"               # GitHub CLI
 
 # ====================
-# CLI Tools - Development
+# Shell & Core CLI
 # ====================
-brew "node"             # JavaScript runtime
-brew "python@3.12"      # Python interpreter
-brew "go"               # Go programming language
-brew "rust"             # Rust programming language
-brew "uv"               # Extremely fast Python package and project manager
-brew "openjdk@11"       # Java Development Kit (LTS version)
-brew "rbenv"            # Ruby version manager
-brew "cocoapods"        # Dependency manager for Swift and Objective-C
-brew "awscli"           # Universal Command Line Interface for AWS
-brew "cloudflare-wrangler"   # CLI tool for Cloudflare Workers development
-brew "vercel-cli"       # Command-line interface for Vercel platform
-brew "docker"           # Lightweight container
-brew "docker-completion" # Zsh completions for Docker CLI
-brew "qt"               # Cross-platform application development framework
-brew "gemini-cli"       # CLI tool for interacting with Google Gemini AI
-brew "stripe/stripe-cli/stripe" # Official Stripe CLI tool for payment integration
-brew "postgresql@15", restart_service: :changed
-brew "mariadb"         
-brew "redis", restart_service: :changed
+brew "git"              # Distributed version control
+brew "zsh"              # Z shell
+brew "curl"             # Tool for transferring data via URLs
+brew "wget"             # Network file downloader
+brew "jq"               # Command-line JSON processor
+brew "tree"             # Display directory tree
+brew "htop"             # Interactive process viewer
 
 # ====================
-# CLI Tools - Utilities
+# Modern Unix Utilities
 # ====================
-brew "htop"             # Process viewer
-brew "tree"             # Directory visualizer
-brew "jq"               # JSON processor
-brew "bat"              # Cat with syntax highlighting
-brew "eza"              # A modern, feature-rich replacement for 'ls'
-brew "fd"               # A fast and user-friendly alternative to 'find'
-brew "fzf"              # Fuzzy finder
-brew "ripgrep"          # ripgrep: fast grep
-brew "starship"         # Fast cross-shell prompt
+brew "bat"              # cat clone with syntax highlighting
+brew "eza"              # Modern replacement for ls
+brew "fd"               # Simple and fast alternative to find
+brew "ripgrep"          # Fast line-oriented search tool (rg)
+brew "fzf"              # Command-line fuzzy finder
 brew "zoxide"           # Smarter cd command
-brew "direnv"           # Per-project environment loader
-brew "zsh-autosuggestions"      # Fish-like command suggestions
-brew "zsh-syntax-highlighting"  # Interactive command syntax highlighting
-brew "zsh-completions"          # Additional zsh completions
-brew "age"              # File encryption for future chezmoi secrets
-brew "genact"           # A nonsense activity generator (pretend to be busy)
-brew "yt-dlp"
+brew "direnv"           # Load/unload environment variables per directory
+brew "starship"         # Cross-shell prompt
+brew "age"              # Modern file encryption tool
+
+# ====================
+# Zsh Enhancements
+# ====================
+brew "zsh-autosuggestions"     # Fish-like autosuggestions for Zsh
+brew "zsh-syntax-highlighting" # Fish-like syntax highlighting for Zsh
+brew "zsh-completions"         # Additional completion definitions for Zsh
 
 # ====================
 # Editors
 # ====================
-brew "neovim"           # Modern Vim
-brew "vim"              # Classic editor
+brew "neovim"           # Hyperextensible Vim-based text editor
+brew "vim"              # Vi Improved text editor
 
 # ====================
-# Applications - Development
+# Language Runtimes & Version Managers
 # ====================
-cask "visual-studio-code"     # Code editor
-cask "antigravity"
-cask "pycharm"
-cask "clion"
-cask "claude-code"
-cask "codex-app"
-cask "warp"                   # Terminal emulator
-cask "termius"
-cask "mactex-no-gui"
-cask "qt-creator"
+brew "node"             # JavaScript runtime built on Chrome's V8
+brew "python@3.12"      # Python programming language (v3.12)
+brew "uv"               # Extremely fast Python package manager
+brew "go"               # Go programming language compiler
+brew "rustup"           # Rust toolchain installer
+brew "rbenv"            # Ruby version manager
+brew "ruby"             # Ruby programming language
+brew "openjdk@11"       # Java Development Kit (v11)
+brew "qt"               # Cross-platform application framework
 
 # ====================
-# Applications - Productivity
+# Apple / Mobile Development
 # ====================
-cask "google-chrome"           # Web browser
-cask "comet"
-cask "thebrowsercompany-dia"   # Now part of Atlassian ecosystem
-cask "chatgpt-atlas"
-cask "slack"                   # Communication
-cask "notion"                  # Notes
-cask "chatgpt"
-cask "google-gemini"
-cask "claude"
+brew "cocoapods"        # Dependency manager for Cocoa projects
 
 # ====================
-# Applications - Utilities
+# Cloud & Deployment CLIs
 # ====================
-cask "stats"                   # System monitor
-cask "alt-tab"                 # Better app switching
-cask "spotify"
-cask "snipaste"
-cask "ogdesign-eagle"
-cask "clash-verge-rev"
-cask "easydict"
-cask "pearcleaner"
+brew "awscli"           # AWS command-line interface
+brew "cloudflare-wrangler" # Cloudflare Workers CLI
+brew "vercel-cli"       # Vercel deployment CLI
+brew "stripe/stripe-cli/stripe" # Stripe payment platform CLI
+brew "gemini-cli"       # Google Gemini AI CLI
+
+# ====================
+# Containers
+# ====================
+brew "docker"           # Docker container engine CLI
+brew "docker-compose"   # Tool for defining multi-container apps
+brew "docker-buildx"    # Docker CLI plugin for extended builds
+brew "docker-completion" # Zsh completion for Docker
+
+# ====================
+# Databases & Local Services
+# ====================
+brew "postgresql@17", restart_service: :changed # Object-relational database system (v17)
+brew "redis", restart_service: :changed          # In-memory data structure store
+brew "mariadb"          # Community-developed fork of MySQL
+
+# ====================
+# Useful CLI Tools
+# ====================
+brew "yt-dlp"           # YouTube/media downloader
+brew "ffmpeg"           # Multimedia framework for audio/video processing
+brew "imagemagick"      # Image manipulation tool
+brew "pandoc"           # Universal document converter
+brew "tldr"             # Simplified and community help
+
+# ====================
+# Development Applications
+# ====================
+cask "visual-studio-code" # Code editor refined for building web/cloud apps
+cask "warp"             # Modern Rust-based terminal
+cask "termius"          # SSH client and terminal
+cask "pycharm"          # Python IDE for professional developers
+cask "clion"            # C and C++ IDE
+cask "antigravity"      # AI-powered development tool
+cask "claude-code"      # Interactive CLI for Claude
+cask "codex-app"        # AI code generation companion
+cask "qt-creator"       # Integrated development environment for Qt
+cask "mactex-no-gui"    # TeX distribution for macOS (minimal)
+
+# ====================
+# Browsers
+# ====================
+cask "google-chrome"    # Web browser from Google
+cask "comet"            # Modern web browser
+cask "thebrowsercompany-dia" # Arc browser utility
+cask "chatgpt-atlas"    # ChatGPT desktop enhancement
+
+# ====================
+# Productivity & Communication
+# ====================
+cask "slack"            # Team communication platform
+cask "notion"           # All-in-one workspace for notes/tasks
+cask "notion-mail"      # Email client from Notion
+cask "notion-calendar"  # Calendar app from Notion
+cask "chatgpt"          # Official ChatGPT desktop app
+cask "google-gemini"    # Official Google Gemini desktop app
+cask "claude"           # Official Claude desktop app
+cask "telegram-desktop" # Desktop client for Telegram messenger
+cask "google-drive"     # Cloud storage and collaboration
+cask "baidunetdisk"     # Baidu Cloud storage client
+cask "wpsoffice-cn"     # All-in-one office suite (Chinese version)
+cask "snipaste"         # Snipping and pinning tool
+cask "easydict"         # Dictionary and translation app
+cask "anki"             # Flashcard learning with spaced repetition
+cask "zotero"           # Reference management tool for research
+cask "simpletex"        # LaTeX OCR and formula recognition
+cask "macwhisper"       # High-quality AI transcription locally
+
+# ====================
+# System Utilities
+# ====================
+cask "raycast"          # Extendable launcher and productivity tool
+cask "stats"            # macOS system monitor in menu bar
+cask "alt-tab"          # Windows-like Alt-Tab switcher for macOS
+cask "clash-verge-rev"  # GUI for Clash based on Tauri
+cask "maczip"           # Archiver and unarchiver for macOS
+cask "pearcleaner"      # Open-source app uninstaller
+
+# ====================
+# Design & Media
+# ====================
+cask "ogdesign-eagle"   # Digital asset management tool
+cask "spotify"          # Digital music service
+cask "iina"             # Modern media player for macOS
+cask "licecap"          # Simple animated screen capture (GIF)
 
 # ====================
 # Fonts
 # ====================
-cask "font-fira-code"          # Programming font
-cask "font-jetbrains-mono"     # Programming font
+cask "font-fira-code"   # Monospaced font with programming ligatures
+cask "font-jetbrains-mono" # Free and open-source typeface for developers
 
 # ====================
 # Mac App Store
 # ====================
-mas "Xcode", id: 497799835
+mas "Xcode", id: 497799835 # Apple's IDE for macOS/iOS development
+mas "iSlide", id: 1489181859 # PowerPoint design resource tool
