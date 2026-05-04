@@ -1,14 +1,21 @@
 # ~/.zshrc - Interactive shell entrypoint.
 
+# Avoid loading aliases, prompts, and completion in non-interactive shells.
 [[ -o interactive ]] || return
 
+# .zshenv normally sets this, but keep a fallback so .zshrc can be sourced by
+# hand on systems that do not yet have the full dotfiles applied.
 : "${ZSH_CONFIG_DIR:=${XDG_CONFIG_HOME:-$HOME/.config}/zsh}"
 
+# Source a module only when it exists. This keeps partial bootstraps and
+# machine-specific files from failing shell startup.
 _zsh_source() {
     local file="$ZSH_CONFIG_DIR/$1"
     [[ -r "$file" ]] && source "$file"
 }
 
+# Load from low-level environment to user overrides. Later files may depend on
+# earlier setup and may intentionally override earlier aliases or variables.
 _zsh_source path.zsh
 _zsh_source env.zsh
 _zsh_source options.zsh
@@ -19,4 +26,5 @@ _zsh_source prompt.zsh
 _zsh_source secrets.zsh
 _zsh_source local.zsh
 
+# Do not leave helper functions in the interactive namespace.
 unset -f _zsh_source

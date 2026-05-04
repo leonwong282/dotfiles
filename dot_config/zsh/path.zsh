@@ -1,17 +1,22 @@
 # PATH and toolchain bootstrap shared by login and interactive shells.
 
+# Load Homebrew's environment from the standard install locations. Apple
+# Silicon uses /opt/homebrew; Intel macOS typically uses /usr/local.
 if [[ -x /opt/homebrew/bin/brew ]]; then
     eval "$(/opt/homebrew/bin/brew shellenv)"
 elif [[ -x /usr/local/bin/brew ]]; then
     eval "$(/usr/local/bin/brew shellenv)"
 fi
 
+# Use zsh's `path` array instead of string concatenation so entries are easier
+# to read and de-duplicate.
 path=(
     "$HOME/bin"
     "$HOME/.local/bin"
     $path
 )
 
+# Remove duplicate PATH entries while preserving the first occurrence.
 typeset -U path
 export PATH
 

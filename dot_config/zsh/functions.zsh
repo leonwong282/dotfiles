@@ -1,15 +1,19 @@
 # Shared shell functions.
 
+# Create a directory and move into it in one step.
 mkcd() {
     mkdir -p "$1" && cd "$1"
 }
 
+# Extract common archive formats without remembering tar/unzip flags.
 extract() {
     if [[ ! -f "$1" ]]; then
         echo "File not found: $1" >&2
         return 1
     fi
 
+    # Dispatch by filename extension; unknown formats return non-zero so
+    # scripts or chained commands can detect the failure.
     case "$1" in
         *.tar.bz2) tar xjf "$1" ;;
         *.tar.gz)  tar xzf "$1" ;;

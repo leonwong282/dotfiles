@@ -1,0 +1,108 @@
+# Starship prompt configuration.
+#
+# Design goals:
+# - Keep prompt fast and single-line for daily terminal work.
+# - Show project context only when it is relevant.
+# - Use ASCII symbols so the prompt is readable in every terminal/font.
+
+add_newline = false
+command_timeout = 1000
+
+format = """
+$username\
+$hostname\
+$directory\
+$git_branch\
+$git_status\
+$package\
+$nodejs\
+$python\
+$ruby\
+$golang\
+$rust\
+$java\
+$docker_context\
+$aws\
+$line_break\
+$character"""
+
+[username]
+format = "[$user]($style)@"
+style_user = "bold yellow"
+style_root = "bold red"
+show_always = false
+
+[hostname]
+format = "[$hostname]($style) "
+ssh_only = true
+style = "bold yellow"
+
+[directory]
+format = "[$path]($style)[$read_only]($read_only_style) "
+style = "bold blue"
+read_only = " ro"
+truncation_length = 4
+truncate_to_repo = true
+
+[git_branch]
+format = "[$symbol$branch(:$remote_branch)]($style) "
+symbol = "git:"
+style = "bold purple"
+
+[git_status]
+format = "([$all_status$ahead_behind]($style) )"
+style = "bold red"
+conflicted = "!"
+ahead = ">"
+behind = "<"
+diverged = "<>"
+up_to_date = ""
+untracked = "?"
+stashed = "$"
+modified = "*"
+staged = "+"
+renamed = "r"
+deleted = "x"
+
+[package]
+format = "[pkg:$version]($style) "
+style = "208"
+
+[nodejs]
+format = "[node:$version]($style) "
+style = "bold green"
+
+[python]
+format = "[py:$version]($style) "
+style = "bold yellow"
+
+[ruby]
+format = "[rb:$version]($style) "
+style = "bold red"
+
+[golang]
+format = "[go:$version]($style) "
+style = "bold cyan"
+
+[rust]
+format = "[rs:$version]($style) "
+style = "bold red"
+
+[java]
+format = "[java:$version]($style) "
+style = "bold red"
+
+[docker_context]
+format = "[docker:$context]($style) "
+style = "blue"
+only_with_files = true
+
+[aws]
+format = "[aws:$profile($region)]($style) "
+style = "bold yellow"
+disabled = false
+
+[character]
+success_symbol = "[>](bold green)"
+error_symbol = "[>](bold red)"
+vimcmd_symbol = "[<](bold green)"

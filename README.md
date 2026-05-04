@@ -69,6 +69,7 @@ Zsh is split by startup phase and responsibility:
 ~/.config/zsh/aliases.zsh
 ~/.config/zsh/functions.zsh
 ~/.config/zsh/prompt.zsh
+~/.config/starship.toml     Starship prompt style
 ~/.config/zsh/secrets.zsh local secrets, not committed
 ~/.config/zsh/local.zsh   machine-specific overrides, not committed
 ```
