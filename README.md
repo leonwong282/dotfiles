@@ -54,6 +54,31 @@ git commit -m "Update dotfiles"
 git push
 ```
 
+## Scripts
+
+This repo includes a small Scripts system for repo maintenance, environment
+checks, conservative bootstrap help, and daily commands installed by chezmoi.
+
+Start with:
+
+```zsh
+scripts/doctor.sh
+scripts/check.sh
+scripts/format.sh --check
+```
+
+After `chezmoi apply`, daily commands are available from `~/.local/bin`, for
+example:
+
+```zsh
+path-check
+sys-info
+dev-update --dry-run
+backup-dotfiles --dry-run
+```
+
+See [docs/scripts-guide.md](docs/scripts-guide.md) for the practical guide.
+
 ## Zsh layout
 
 Zsh is split by startup phase and responsibility:
