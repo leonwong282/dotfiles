@@ -1,125 +1,22 @@
-# ~/.zshrc - Interactive shell configuration
-# Loaded for every new terminal window
+# ~/.zshrc - Interactive shell entrypoint.
 
-# ============================================
-# Environment Variables
-# ============================================
+[[ -o interactive ]] || return
 
-# Default editors
-export EDITOR="vim"   # Or nvim, vim, nano
-export VISUAL="code --wait"
+: "${ZSH_CONFIG_DIR:=${XDG_CONFIG_HOME:-$HOME/.config}/zsh}"
 
-# Language and locale
-export LANG="en_US.UTF-8"
-export LC_ALL="en_US.UTF-8"
-
-# History settings
-export HISTSIZE=10000
-export SAVEHIST=10000
-export HISTFILE="$HOME/.zsh_history"
-
-# Less pager settings
-export LESS="-R"              # Enable color in less
-export PAGER="less"
-
-# Local secrets. Keep real credentials out of this repository.
-if [[ -r "$HOME/.config/zsh/secrets.zsh" ]]; then
-    source "$HOME/.config/zsh/secrets.zsh"
-fi
-
-# ============================================
-# Aliases
-# ============================================
-
-# Quick directory navigation
-alias ..='cd ..'
-alias ...='cd ../..'
-alias ....='cd ../../..'
-alias ~='cd ~'
-
-# List files with details
-alias ll='ls -la'
-alias la='ls -A'
-alias l='ls -CF'
-
-# Git shortcuts
-alias gs='git status'
-alias ga='git add'
-alias gc='git commit'
-alias gp='git push'
-alias gl='git pull'
-alias gd='git diff'
-alias gco='git checkout'
-alias gb='git branch'
-alias glog='git log --oneline --graph --decorate'
-
-# Confirm before overwriting
-alias cp='cp -i'
-alias mv='mv -i'
-alias rm='rm -i'
-
-# Use modern tools if installed
-command -v bat >/dev/null 2>&1 && alias cat='bat'
-command -v eza >/dev/null 2>&1 && alias ls='eza'
-command -v fd >/dev/null 2>&1 && alias find='fd'
-command -v rg >/dev/null 2>&1 && alias grep='rg'
-
-# Show PATH entries one per line
-alias path='echo $PATH | tr ":" "\n"'
-
-# Get public IP
-alias myip='curl ifconfig.me'
-
-# Clear terminal
-alias c='clear'
-
-# Edit and reload zshrc
-alias zshconfig='vim ~/.zshrc'
-alias reload='source ~/.zshrc'
-
-# ============================================
-# Functions
-# ============================================
-
-# Create directory and cd into it
-# Usage: mkcd my-new-project
-mkcd() {
-    mkdir -p "$1" && cd "$1"
+_zsh_source() {
+    local file="$ZSH_CONFIG_DIR/$1"
+    [[ -r "$file" ]] && source "$file"
 }
 
-# Extract any archive:
-# Usage: extract archive.tar.gz
-extract() {
-    if [[ -f "$1" ]]; then
-        case "$1" in
-            *.tar.bz2)   tar xjf "$1"     ;;
-            *.tar.gz)    tar xzf "$1"     ;;
-            *.tar.xz)    tar xJf "$1"     ;;
-            *.bz2)       bunzip2 "$1"     ;;
-            *.gz)        gunzip "$1"      ;;
-            *.tar)       tar xf "$1"      ;;
-            *.zip)       unzip "$1"       ;;
-            *.7z)        7z x "$1"        ;;
-            *)           echo "Unknown archive format: $1" ;;
-        esac
-    else
-        echo "File not found: $1"
-    fi
-}
+_zsh_source path.zsh
+_zsh_source env.zsh
+_zsh_source options.zsh
+_zsh_source completion.zsh
+_zsh_source aliases.zsh
+_zsh_source functions.zsh
+_zsh_source prompt.zsh
+_zsh_source secrets.zsh
+_zsh_source local.zsh
 
-# ============================================
-# Prompt (optional - or use Starship)
-# ============================================
-# Basic prompt showing directory and git branch
-# autoload -Uz vcs_info
-# precmd() { vcs_info }
-# PROMPT='%F{blue}%~%f %F{green}${vcs_info_msg_0_}%f $ '
-
-# Or use Starship prompt:
-# eval "$(starship init zsh)"
-
-# Machine-specific overrides should be sourced last so they can adjust aliases,
-# paths, or tool settings without changing the shared dotfiles repo.
-if [[ -r "$HOME/.config/zsh/local.zsh" ]]; then
-    source "$HOME/.config/zsh/local.zsh"
-fi
+unset -f _zsh_source

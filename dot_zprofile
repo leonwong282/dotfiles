@@ -1,22 +1,6 @@
-# ~/.zprofile - Login shell configuration
-# Loaded once when you log in
+# ~/.zprofile - Login shell configuration.
+# Keep this small; interactive behavior belongs in ~/.zshrc.
 
-# ============================================
-# Homebrew
-# ============================================
-if [[ -x /opt/homebrew/bin/brew ]]; then
-    eval "$(/opt/homebrew/bin/brew shellenv)"
-elif [[ -x /usr/local/bin/brew ]]; then
-    eval "$(/usr/local/bin/brew shellenv)"
+if [[ -r "${ZSH_CONFIG_DIR:-$HOME/.config/zsh}/path.zsh" ]]; then
+    source "${ZSH_CONFIG_DIR:-$HOME/.config/zsh}/path.zsh"
 fi
-
-# configure Homebrew to use mirrors (for users in China Mainland)
-# export HOMEBREW_PIP_INDEX_URL=https://pypi.tuna.tsinghua.edu.cn/simple #ckbrew
-# export HOMEBREW_API_DOMAIN=https://mirrors.tuna.tsinghua.edu.cn/homebrew-bottles/api  #ckbrew
-# export HOMEBREW_BOTTLE_DOMAIN=https://mirrors.ustc.edu.cn/homebrew-bottles #ckbrew
-# eval $(/opt/homebrew/bin/brew shellenv) #ckbrew
-
-# ============================================
-# Additional PATH entries
-# ============================================
-export PATH="$HOME/bin:$HOME/.local/bin:$PATH"
