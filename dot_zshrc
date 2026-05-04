@@ -1,4 +1,7 @@
-# ~/.zshrc - Interactive shell entrypoint.
+# ~/.zshrc - interactive shell entrypoint.
+#
+# This file only coordinates module loading. Concrete behavior lives under
+# ~/.config/zsh/modules so startup order stays explicit and easy to audit.
 
 # Avoid loading aliases, prompts, and completion in non-interactive shells.
 [[ -o interactive ]] || return
@@ -7,24 +10,41 @@
 # hand on systems that do not yet have the full dotfiles applied.
 : "${ZSH_CONFIG_DIR:=${XDG_CONFIG_HOME:-$HOME/.config}/zsh}"
 
-# Source a module only when it exists. This keeps partial bootstraps and
-# machine-specific files from failing shell startup.
-_zsh_source() {
-    local file="$ZSH_CONFIG_DIR/$1"
-    [[ -r "$file" ]] && source "$file"
-}
+# Enable one-off startup profiling with `ZSH_PROFILE=1 zsh -i`.
+if [[ "${ZSH_PROFILE:-0}" == "1" ]]; then
+    zmodload zsh/zprof 2>/dev/null || true
+fi
+
+if [[ -r "$ZSH_CONFIG_DIR/lib/source.zsh" ]]; then
+    source "$ZSH_CONFIG_DIR/lib/source.zsh"
+else
+    print -u2 "zsh: missing $ZSH_CONFIG_DIR/lib/source.zsh"
+    return 1
+fi
+
+zsh_source "lib/guards.zsh"
+zsh_source "lib/path.zsh"
 
 # Load from low-level environment to user overrides. Later files may depend on
 # earlier setup and may intentionally override earlier aliases or variables.
-_zsh_source path.zsh
-_zsh_source env.zsh
-_zsh_source options.zsh
-_zsh_source completion.zsh
-_zsh_source aliases.zsh
-_zsh_source functions.zsh
-_zsh_source prompt.zsh
-_zsh_source secrets.zsh
-_zsh_source local.zsh
+for module in \
+    modules/00-path.zsh \
+    modules/05-local.pre.zsh \
+    modules/10-env.zsh \
+    modules/20-options.zsh \
+    modules/30-completion.zsh \
+    modules/40-keybindings.zsh \
+    modules/50-aliases.zsh \
+    modules/60-functions.zsh \
+    modules/70-tools.zsh \
+    modules/80-prompt.zsh \
+    modules/90-plugins.zsh \
+    modules/95-secrets.zsh \
+    modules/99-local.post.zsh
+do
+    zsh_source "$module"
+done
 
-# Do not leave helper functions in the interactive namespace.
-unset -f _zsh_source
+if [[ "${ZSH_PROFILE:-0}" == "1" ]] && (( $+functions[zprof] )); then
+    zprof
+fi

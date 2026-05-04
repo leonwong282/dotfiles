@@ -1,0 +1,14 @@
+# ~/.config/zsh/local.pre.zsh - early local overrides.
+#
+# Copy this file to ~/.config/zsh/local.pre.zsh when a machine needs settings
+# before shared modules load. Typical examples: Homebrew mirrors and PATH.
+
+# Homebrew mirrors for China Mainland networks.
+# export HOMEBREW_PIP_INDEX_URL=https://pypi.tuna.tsinghua.edu.cn/simple
+# export HOMEBREW_API_DOMAIN=https://mirrors.tuna.tsinghua.edu.cn/homebrew-bottles/api
+# export HOMEBREW_BOTTLE_DOMAIN=https://mirrors.ustc.edu.cn/homebrew-bottles
+
+# Add work-specific tools before aliases check command availability.
+# path=("$HOME/work/bin" $path)
+# typeset -U path
+# export PATH

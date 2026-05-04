@@ -1,0 +1,7 @@
+# ~/.config/zsh/local.post.zsh - final local overrides.
+#
+# Copy this file to ~/.config/zsh/local.post.zsh for host-only aliases,
+# functions, and experiments that should override shared dotfiles.
+
+# alias work='cd ~/work'
+# export BAT_THEME="TwoDark"

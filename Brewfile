@@ -53,6 +53,11 @@ brew "fd"               # A fast and user-friendly alternative to 'find'
 brew "fzf"              # Fuzzy finder
 brew "ripgrep"          # ripgrep: fast grep
 brew "starship"         # Fast cross-shell prompt
+brew "zoxide"           # Smarter cd command
+brew "direnv"           # Per-project environment loader
+brew "zsh-autosuggestions"      # Fish-like command suggestions
+brew "zsh-syntax-highlighting"  # Interactive command syntax highlighting
+brew "zsh-completions"          # Additional zsh completions
 brew "age"              # File encryption for future chezmoi secrets
 brew "genact"           # A nonsense activity generator (pretend to be busy)
 brew "yt-dlp"

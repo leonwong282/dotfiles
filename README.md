@@ -59,33 +59,55 @@ git push
 Zsh is split by startup phase and responsibility:
 
 ```text
-~/.zshenv                 always loaded; only XDG/ZSH_CONFIG_DIR basics
-~/.zprofile               login shell; delegates PATH setup
-~/.zshrc                  interactive shell loader
-~/.config/zsh/path.zsh    Homebrew and PATH
-~/.config/zsh/env.zsh     editor, locale, history, pager
-~/.config/zsh/options.zsh zsh behavior and keymap
-~/.config/zsh/completion.zsh
-~/.config/zsh/aliases.zsh
-~/.config/zsh/functions.zsh
-~/.config/zsh/prompt.zsh
-~/.config/starship.toml     Starship prompt style
-~/.config/zsh/secrets.zsh local secrets, not committed
-~/.config/zsh/local.zsh   machine-specific overrides, not committed
+~/.zshenv                              always loaded; XDG and zsh dirs only
+~/.zprofile                            login shell; early PATH bootstrap
+~/.zshrc                               interactive shell module loader
+~/.config/starship.toml                Starship prompt style
+~/.config/zsh/lib/source.zsh           safe source helpers
+~/.config/zsh/lib/guards.zsh           platform and command predicates
+~/.config/zsh/lib/path.zsh             PATH helper functions
+~/.config/zsh/modules/00-path.zsh      Homebrew and PATH
+~/.config/zsh/modules/05-local.pre.zsh early local overrides
+~/.config/zsh/modules/10-env.zsh       editor, locale, history, pager
+~/.config/zsh/modules/20-options.zsh   zsh behavior
+~/.config/zsh/modules/30-completion.zsh
+~/.config/zsh/modules/40-keybindings.zsh
+~/.config/zsh/modules/50-aliases.zsh
+~/.config/zsh/modules/60-functions.zsh
+~/.config/zsh/modules/70-tools.zsh     fzf, zoxide, direnv, rbenv, pnpm
+~/.config/zsh/modules/80-prompt.zsh    Starship bootstrap and fallback prompt
+~/.config/zsh/modules/90-plugins.zsh   autosuggestions and highlighting
+~/.config/zsh/modules/95-secrets.zsh   local secrets loader
+~/.config/zsh/modules/99-local.post.zsh final local overrides
+~/.config/zsh/examples/                copyable local/secrets examples
 ```
 
 Load order in `.zshrc`:
 
 ```text
-path -> env -> options -> completion -> aliases -> functions -> prompt -> secrets -> local
+00-path
+05-local.pre
+10-env
+20-options
+30-completion
+40-keybindings
+50-aliases
+60-functions
+70-tools
+80-prompt
+90-plugins
+95-secrets
+99-local.post
 ```
 
 Rules:
 
 - Keep `.zshenv` tiny because it runs for scripts and non-interactive shells.
-- Put shared interactive behavior in `~/.config/zsh/*.zsh`.
-- Put machine-only paths, mirrors, temporary aliases, and experiments in `local.zsh`.
+- Put shared interactive behavior in `~/.config/zsh/modules/*.zsh`.
+- Put machine-only PATH and mirror settings in `~/.config/zsh/local.pre.zsh`.
+- Put temporary aliases, functions, and experiments in `~/.config/zsh/local.post.zsh`.
 - Put credentials only in `secrets.zsh` or an encrypted secret workflow.
+- Set `ZSH_PROFILE=1` before launching an interactive shell to print zsh startup profiling.
 
 ## Secrets
 
@@ -100,10 +122,11 @@ Interactive shell secrets are loaded from:
 Machine-specific shell overrides are loaded from:
 
 ```zsh
-~/.config/zsh/local.zsh
+~/.config/zsh/local.pre.zsh
+~/.config/zsh/local.post.zsh
 ```
 
-Use the managed `~/.config/zsh/secrets.zsh.example` as a template and keep the real `secrets.zsh` local or encrypted.
+Use the managed examples under `~/.config/zsh/examples/` as templates and keep real local files untracked or encrypted.
 
 ## What belongs here
 

@@ -1,8 +1,14 @@
-# ~/.zprofile - Login shell configuration.
-# Keep this small; interactive behavior belongs in ~/.zshrc.
+# ~/.zprofile - login shell configuration.
+#
+# Login shells run once when a terminal session starts. Keep this file small:
+# it should prepare PATH for GUI-launched terminals, while interactive behavior
+# remains in ~/.zshrc.
 
-# Login shells need PATH early so GUI-launched terminals can find Homebrew and
-# user-local commands before .zshrc loads.
-if [[ -r "${ZSH_CONFIG_DIR:-$HOME/.config/zsh}/path.zsh" ]]; then
-    source "${ZSH_CONFIG_DIR:-$HOME/.config/zsh}/path.zsh"
+: "${ZSH_CONFIG_DIR:=${XDG_CONFIG_HOME:-$HOME/.config}/zsh}"
+
+if [[ -r "$ZSH_CONFIG_DIR/lib/source.zsh" ]]; then
+    source "$ZSH_CONFIG_DIR/lib/source.zsh"
+    zsh_source "lib/guards.zsh"
+    zsh_source "lib/path.zsh"
+    zsh_source "modules/00-path.zsh"
 fi
