@@ -2,16 +2,20 @@
 " Professional, plugin-light Vim configuration managed by chezmoi as dot_vimrc.
 " Targets Vim 8.2+ on macOS and Linux. Keep this file Vimscript-only.
 
+" Skip loading if the skip variable is defined
 if exists('g:skip_dotfiles_vimrc')
   finish
 endif
 
+" Ensure nocompatible mode is set for modern Vim behavior
 if &compatible
   set nocompatible
 endif
 
+" Set script encoding to UTF-8
 scriptencoding utf-8
 
+" Version check: Optimize for Vim 8.2+
 if v:version < 802
   echohl WarningMsg
   echom 'This vimrc targets Vim 8.2+; continuing with guarded defaults.'
@@ -26,19 +30,21 @@ let maplocalleader = ','
 " Encoding, Filetypes, Syntax
 " ---------------------------------------------------------------------------
 
-set encoding=utf-8
-set fileencodings=utf-8,ucs-bom,latin1
-set fileformats=unix,dos,mac
+set encoding=utf-8           " Internal encoding used by Vim
+set fileencodings=utf-8,ucs-bom,latin1 " Order of encoding detection
+set fileformats=unix,dos,mac " Preferred line ending formats
 
+" Enable filetype detection, plugins, and indentation
 if has('autocmd')
   filetype plugin indent on
 endif
 
+" Enable syntax highlighting
 if has('syntax') && !exists('syntax_on')
   syntax enable
 endif
 
-" Match % across HTML tags, shell blocks, and other common pairs when available.
+" Match % across HTML tags, shell blocks, and other common pairs when available
 if !exists('g:loaded_matchit') && findfile('plugin/matchit.vim', &runtimepath) ==# ''
   silent! runtime! macros/matchit.vim
 endif
@@ -47,32 +53,36 @@ endif
 " User Interface
 " ---------------------------------------------------------------------------
 
-set number
+set number              " Show line numbers
 if exists('+relativenumber')
-  set relativenumber
+  set relativenumber    " Show relative line numbers for easier jumping
 endif
-set cursorline
-set ruler
-set showcmd
-set laststatus=2
-set shortmess+=I
+set cursorline          " Highlight the current line
+set ruler               " Show cursor position in the status line
+set showcmd             " Display incomplete commands in the status line
+set laststatus=2        " Always show the status line
+set shortmess+=I        " Disable the startup splash screen
 
+" Always show the sign column to prevent screen flicker when signs appear
 if exists('+signcolumn')
   set signcolumn=yes
 endif
 
+" Command-line completion settings
 set wildmenu
 set wildmode=longest:full,full
+" Files and patterns to ignore in wildmenu
 set wildignore+=*.o,*.obj,*.pyc,*.class,*.swp,*.DS_Store
 set wildignore+=*/.git/*,*/.hg/*,*/.svn/*,*/node_modules/*
 
-set scrolloff=5
-set sidescrolloff=8
-set display+=lastline
+set scrolloff=5         " Keep 5 lines above/below the cursor when scrolling
+set sidescrolloff=8     " Keep 8 columns to the left/right when scrolling
+set display+=lastline   " Display as much as possible of the last line
 if has('patch-7.4.2109')
-  set display+=truncate
+  set display+=truncate " Display @@ for truncated lines instead of empty space
 endif
 
+" TrueColor support detection for modern terminals
 if exists('+termguicolors')
       \ && ($COLORTERM =~# 'truecolor\|24bit'
       \ || $TERM_PROGRAM =~# 'iTerm\|WezTerm'
@@ -80,6 +90,7 @@ if exists('+termguicolors')
   set termguicolors
 endif
 
+" Enable 256 color support in terminals that support it
 if !has('gui_running') && &t_Co < 256 && $TERM =~# '256color'
   set t_Co=256
 endif
@@ -88,67 +99,71 @@ endif
 " Search
 " ---------------------------------------------------------------------------
 
-set incsearch
-set hlsearch
-set ignorecase
-set smartcase
+set incsearch           " Show search results as you type
+set hlsearch            " Highlight search matches
+set ignorecase          " Ignore case when searching
+set smartcase           " Override 'ignorecase' if search pattern contains uppercase
 
 " ---------------------------------------------------------------------------
 " Editing Behavior
 " ---------------------------------------------------------------------------
 
-set backspace=indent,eol,start
-set hidden
-set confirm
-set autoread
-set history=1000
-set splitbelow
-set splitright
-set switchbuf=useopen,usetab
-set noerrorbells
-set visualbell
-set t_vb=
-set nojoinspaces
+set backspace=indent,eol,start " Allow backspacing over everything in insert mode
+set hidden              " Allow switching buffers without saving
+set confirm             " Prompt for confirmation when closing unsaved files
+set autoread            " Automatically reload files changed outside of Vim
+set history=1000        " Keep 1000 lines of command line history
+set splitbelow          " Open horizontal splits below the current window
+set splitright          " Open vertical splits to the right of the current window
+set switchbuf=useopen,usetab " Prefer existing windows/tabs when jumping to buffers
+set noerrorbells        " Disable error sounds
+set visualbell          " Use a visual flash instead of a beep
+set t_vb=               " Disable visual bell flash code
+set nojoinspaces        " Don't insert two spaces after a period when joining lines
 
+" Enable mouse support in all modes
 if has('mouse')
   set mouse=a
 endif
 
+" Timeout settings for key sequences
 set timeout
 set timeoutlen=500
 set ttimeout
 set ttimeoutlen=100
 
-set wrap
-set linebreak
+set wrap                " Wrap long lines visually
+set linebreak           " Break lines at word boundaries
 if exists('+breakindent')
-  set breakindent
+  set breakindent       " Maintain indentation when wrapping lines
 endif
 
-" Q enters Ex mode by default; formatting is available as gq.
+" Disable Q for entering Ex mode (prevents accidental triggers)
 nnoremap Q <Nop>
 
 " ---------------------------------------------------------------------------
 " Indentation
 " ---------------------------------------------------------------------------
 
-set expandtab
-set tabstop=2
-set softtabstop=2
-set shiftwidth=2
-set shiftround
-set smarttab
-set autoindent
+set expandtab           " Convert tabs to spaces
+set tabstop=2           " Number of spaces a tab counts for
+set softtabstop=2       " Number of spaces for backspace/editing
+set shiftwidth=2        " Number of spaces for auto-indentation
+set shiftround          " Round indent to a multiple of 'shiftwidth'
+set smarttab            " Insert 'shiftwidth' spaces at the start of a line
+set autoindent          " Copy indent from the previous line
 
 " ---------------------------------------------------------------------------
-" File Safety
+" File Safety and State
 " ---------------------------------------------------------------------------
 
+" Define directories for state files
 let s:vim_state_dir = expand('~/.vim')
 let s:backup_dir = s:vim_state_dir . '/backup'
 let s:swap_dir = s:vim_state_dir . '/swap'
 let s:undo_dir = s:vim_state_dir . '/undo'
 
+" Helper function to ensure directory existence and writeability
 function! s:EnsureDir(path) abort
   if !isdirectory(a:path)
     silent! call mkdir(a:path, 'p', 0700)
@@ -156,6 +171,7 @@ function! s:EnsureDir(path) abort
   return isdirectory(a:path) && filewritable(a:path) == 2
 endfunction
 
+" Backup configuration
 if s:EnsureDir(s:backup_dir)
   let &backupdir = s:backup_dir . '//'
   set backup
@@ -165,6 +181,7 @@ else
   set nowritebackup
 endif
 
+" Swap file configuration
 if s:EnsureDir(s:swap_dir)
   let &directory = s:swap_dir . '//'
 else
@@ -172,6 +189,7 @@ else
   setlocal noswapfile
 endif
 
+" Persistent Undo configuration
 if has('persistent_undo') && exists('+undofile') && s:EnsureDir(s:undo_dir)
   let &undodir = s:undo_dir . '//'
   set undofile
@@ -181,14 +199,13 @@ endif
 " Clipboard
 " ---------------------------------------------------------------------------
 
-" Use the system clipboard only when Vim was compiled for it and the session
-" has a safe clipboard target. In headless SSH sessions this stays untouched.
+" Use system clipboard when available and not in a remote SSH session
 if has('clipboard')
   let s:in_ssh = !empty($SSH_CONNECTION) || !empty($SSH_TTY) || !empty($SSH_CLIENT)
   if !s:in_ssh && (has('mac') || has('macunix') || has('gui_macvim'))
-    set clipboard=unnamed
+    set clipboard=unnamed " macOS system clipboard
   elseif !s:in_ssh && (has('gui_running') || !empty($DISPLAY) || !empty($WAYLAND_DISPLAY))
-    silent! set clipboard=unnamedplus
+    silent! set clipboard=unnamedplus " Linux system clipboard
   endif
   unlet s:in_ssh
 endif
@@ -197,6 +214,7 @@ endif
 " Commands
 " ---------------------------------------------------------------------------
 
+" Get the path to the current vimrc
 function! s:VimrcPath() abort
   if exists('$MYVIMRC') && !empty($MYVIMRC)
     return $MYVIMRC
@@ -204,15 +222,18 @@ function! s:VimrcPath() abort
   return expand('~/.vimrc')
 endfunction
 
+" Command to edit the vimrc file
 function! s:EditVimrc() abort
   execute 'edit' fnameescape(s:VimrcPath())
 endfunction
 
+" Command to reload the vimrc file
 function! s:ReloadVimrc() abort
   execute 'source' fnameescape(s:VimrcPath())
   echo 'Reloaded ' . s:VimrcPath()
 endfunction
 
+" Command to trim trailing whitespace from the file
 function! s:TrimWhitespace() abort
   let l:view = winsaveview()
   let l:search = @/
@@ -221,6 +242,7 @@ function! s:TrimWhitespace() abort
   call winrestview(l:view)
 endfunction
 
+" Register user commands
 command! -bar EditVimrc call <SID>EditVimrc()
 command! -bar ReloadVimrc call <SID>ReloadVimrc()
 command! -bar TrimWhitespace call <SID>TrimWhitespace()
@@ -229,38 +251,48 @@ command! -bar TrimWhitespace call <SID>TrimWhitespace()
 " Mappings
 " ---------------------------------------------------------------------------
 
+" Clear search highlighting
 nnoremap <silent> <leader>/ :nohlsearch<CR>
+" Save file
 nnoremap <silent> <leader>w :update<CR>
+" Quit Vim
 nnoremap <silent> <leader>q :quit<CR>
 
+" Window navigation (Ctrl-h/j/k/l)
 nnoremap <silent> <C-h> <C-w>h
 nnoremap <silent> <C-j> <C-w>j
 nnoremap <silent> <C-k> <C-w>k
 nnoremap <silent> <C-l> <C-w>l
 
+" Window resizing
 nnoremap <silent> <leader>= <C-w>=
 nnoremap <silent> <leader>+ :resize +3<CR>
 nnoremap <silent> <leader>- :resize -3<CR>
 nnoremap <silent> <leader>> :vertical resize +5<CR>
 nnoremap <silent> <leader>< :vertical resize -5<CR>
 
+" Buffer navigation
 nnoremap <silent> [b :bprevious<CR>
 nnoremap <silent> ]b :bnext<CR>
 nnoremap <silent> <leader>bb :buffer #<CR>
 nnoremap <silent> <leader>bd :bdelete<CR>
 
+" Move lines up/down in normal and visual modes
 nnoremap <silent> <leader>mj :move .+1<CR>==
 nnoremap <silent> <leader>mk :move .-2<CR>==
 xnoremap <silent> <leader>mj :move '>+1<CR>gv=gv
 xnoremap <silent> <leader>mk :move '<-2<CR>gv=gv
 
+" Toggle relative line numbers
 if exists('+relativenumber')
   nnoremap <silent> <leader>rn :set relativenumber!<CR>
 endif
 
+" Quick edit and reload of vimrc
 nnoremap <silent> <leader>ev :EditVimrc<CR>
 nnoremap <silent> <leader>rv :ReloadVimrc<CR>
 
+" Stay in visual mode after indenting
 xnoremap < <gv
 xnoremap > >gv
 
@@ -269,6 +301,7 @@ xnoremap > >gv
 " ---------------------------------------------------------------------------
 
 if has('autocmd')
+  " Automatically restore cursor position upon reopening a file
   augroup dotfiles_vimrc_restore_cursor
     autocmd!
     autocmd BufReadPost *
@@ -280,6 +313,7 @@ if has('autocmd')
           \ | endif
   augroup END
 
+  " Briefly highlight yanked text
   if exists('##TextYankPost') && exists('*matchaddpos') && exists('*timer_start')
     function! s:DeleteYankMatch(id, timer) abort
       silent! call matchdelete(a:id)
@@ -314,6 +348,7 @@ if has('autocmd')
     augroup END
   endif
 
+  " Automatically rebalance windows when Vim is resized
   if exists('##VimResized')
     augroup dotfiles_vimrc_resize
       autocmd!
@@ -321,6 +356,7 @@ if has('autocmd')
     augroup END
   endif
 
+  " Filetype-specific indentation rules
   augroup dotfiles_vimrc_indent
     autocmd!
     autocmd FileType python setlocal tabstop=4 softtabstop=4 shiftwidth=4 expandtab
@@ -333,15 +369,15 @@ if has('autocmd')
 endif
 
 " ---------------------------------------------------------------------------
-" Optional Plugins
+" Optional Plugin Configuration
 " ---------------------------------------------------------------------------
 
-" Vim 8 native packages under ~/.vim/pack/* load without any configuration.
-" If vim-plug is installed, keep the existing lightweight plugin list.
+" vim-startify settings
 let g:startify_change_to_dir = get(g:, 'startify_change_to_dir', 0)
 let g:startify_session_autoload = get(g:, 'startify_session_autoload', 0)
 let g:startify_session_persistence = get(g:, 'startify_session_persistence', 0)
 
+" python-mode settings
 let g:pymode_python = get(g:, 'pymode_python', 'python3')
 let g:pymode_trim_whitespaces = get(g:, 'pymode_trim_whitespaces', 0)
 let g:pymode_doc = get(g:, 'pymode_doc', 1)
@@ -351,6 +387,7 @@ let g:pymode_lint = get(g:, 'pymode_lint', 1)
 let g:pymode_lint_checkers = get(g:, 'pymode_lint_checkers', ['pyflakes', 'pep8', 'mccabe', 'pylint'])
 let g:pymode_options_max_line_length = get(g:, 'pymode_options_max_line_length', 120)
 
+" Load plugins with vim-plug if available
 let s:vim_plug_path = expand('~/.vim/autoload/plug.vim')
 let s:has_vim_plug = exists('*plug#begin') || filereadable(s:vim_plug_path)
 
@@ -367,6 +404,7 @@ unlet s:vim_plug_path s:has_vim_plug
 " Local Overrides
 " ---------------------------------------------------------------------------
 
+" Load machine-specific configurations if they exist
 for s:local_vimrc in [expand('~/.vimrc.local'), expand('~/.vim/vimrc.local')]
   if filereadable(s:local_vimrc)
     execute 'source' fnameescape(s:local_vimrc)
