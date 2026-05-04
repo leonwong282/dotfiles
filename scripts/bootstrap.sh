@@ -1,16 +1,26 @@
 #!/usr/bin/env bash
+# scripts/bootstrap.sh - Machine initialization helper for chezmoi dotfiles.
+#
+# This script prepares a new environment by checking for dependencies (git, chezmoi, homebrew),
+# validating the repository structure, and optionally applying the dotfiles configuration.
+# It is designed to be safe and conservative, performing read-only checks by default.
+
 set -euo pipefail
 
+# Determine the directory where this script resides
 SCRIPT_DIR="$(cd -- "$(dirname -- "${BASH_SOURCE[0]}")" && pwd -P)"
 
+# Load common utility functions (log_info, log_warn, die, has_command, etc.)
 # shellcheck source=lib/common.sh
 source "$SCRIPT_DIR/lib/common.sh"
 
+# Default configuration
 MODE="plan"
 FAIL_COUNT=0
 WARN_COUNT=0
 ROOT="$(repo_root)"
 
+# Display usage instructions
 usage() {
   cat <<'EOF'
 Usage: scripts/bootstrap.sh [--dry-run | --apply] [--help]
@@ -28,24 +38,29 @@ or apply chezmoi unless --apply is passed and confirmation is given.
 EOF
 }
 
+# Print a section header
 section() {
   printf '\n== %s ==\n' "$1"
 }
 
+# Log a success message
 ok() {
   printf '[OK] %s\n' "$*"
 }
 
+# Log a warning and increment warning counter
 warn() {
   WARN_COUNT=$((WARN_COUNT + 1))
   log_warn "$*"
 }
 
+# Log an error and increment failure counter
 fail() {
   FAIL_COUNT=$((FAIL_COUNT + 1))
   log_error "$*"
 }
 
+# Indent multiline text for cleaner output
 indent_text() {
   local text="${1:-}"
   local line
@@ -56,10 +71,12 @@ indent_text() {
   done <<<"$text"
 }
 
+# Print a command for the user to see or copy
 print_command() {
   printf '  %s\n' "$*"
 }
 
+# Parse command line arguments to set the execution mode
 parse_args() {
   while [[ $# -gt 0 ]]; do
     case "$1" in
@@ -84,6 +101,7 @@ parse_args() {
   done
 }
 
+# Identify the operating system and architecture
 check_os() {
   local os
   local arch
@@ -102,6 +120,7 @@ check_os() {
   fi
 }
 
+# Check for essential tools (git, chezmoi) and repository integrity
 check_basics() {
   local status_output
 
@@ -138,6 +157,7 @@ check_basics() {
   fi
 }
 
+# Display instructions on how to install Homebrew
 print_homebrew_guidance() {
   cat <<'EOF'
 Homebrew is not installed. Install it manually from the official site:
@@ -154,6 +174,7 @@ After Homebrew is installed:
 EOF
 }
 
+# Perform macOS-specific checks, mainly for Homebrew
 check_macos() {
   local brew_version
 
@@ -173,6 +194,7 @@ check_macos() {
   fi
 }
 
+# Check for the existence of common directories used by the dotfiles
 check_directories() {
   section "4. Directory Checks"
 
@@ -189,6 +211,7 @@ check_directories() {
   fi
 }
 
+# Validate the chezmoi source directory and show its current status
 check_chezmoi_source() {
   local source_path
 
@@ -218,6 +241,7 @@ check_chezmoi_source() {
   show_chezmoi_status
 }
 
+# Show pending changes between the source and target files
 show_chezmoi_status() {
   local status_output
 
@@ -235,6 +259,7 @@ show_chezmoi_status() {
   fi
 }
 
+# Execute a dry run of 'chezmoi apply' to preview changes without modifying files
 run_chezmoi_dry_run() {
   local dry_run_output
 
@@ -266,6 +291,7 @@ run_chezmoi_dry_run() {
   fi
 }
 
+# Prompt the user to apply changes if the mode is set to 'apply'
 maybe_apply_chezmoi() {
   section "7. Apply"
 
@@ -290,6 +316,7 @@ maybe_apply_chezmoi() {
   fi
 }
 
+# Provide guidance on the next steps to complete the setup
 print_next_steps() {
   section "Next Recommended Commands"
 
@@ -305,6 +332,7 @@ print_next_steps() {
   print_command "scripts/bootstrap.sh --apply"
 }
 
+# Orchestrate the bootstrap process
 main() {
   parse_args "$@"
 
