@@ -4,7 +4,7 @@ set -euo pipefail
 DRY_RUN=0
 BREW_ONLY=0
 CHEZMOI_ONLY=0
-RUN_CLEANUP=1
+RUN_CLEANUP=0
 FAIL_COUNT=0
 
 usage() {
@@ -17,7 +17,8 @@ Options:
   --dry-run       Print commands instead of running them
   --brew-only     Run only the Homebrew update steps
   --chezmoi-only  Run only the chezmoi update steps
-  --no-cleanup    Skip `brew cleanup`
+  --cleanup       Also run `brew cleanup`
+  --no-cleanup    Accepted for compatibility; cleanup is already off by default
   -h, --help      Show this help
 
 Behavior:
@@ -28,6 +29,7 @@ Behavior:
 
 Safety:
   - Does not install new packages.
+  - Does not run `brew cleanup` unless --cleanup is passed.
   - Does not commit or push Git changes.
   - Does not run `chezmoi apply` automatically.
   - Does not remove non-Homebrew files.
@@ -83,6 +85,9 @@ parse_args() {
         ;;
       --chezmoi-only)
         CHEZMOI_ONLY=1
+        ;;
+      --cleanup)
+        RUN_CLEANUP=1
         ;;
       --no-cleanup)
         RUN_CLEANUP=0
@@ -148,7 +153,7 @@ run_brew() {
   if [[ "$RUN_CLEANUP" -eq 1 ]]; then
     run_step "Homebrew cleanup" "$brew_path" cleanup
   else
-    log_info "Skipping Homebrew cleanup because --no-cleanup was provided."
+    log_info "Skipping Homebrew cleanup. Pass --cleanup to remove old Homebrew files."
   fi
 }
 

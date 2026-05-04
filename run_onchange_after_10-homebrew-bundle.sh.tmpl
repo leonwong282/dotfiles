@@ -8,11 +8,17 @@ if [[ "$(uname -s)" != "Darwin" ]]; then
   exit 0
 fi
 
+if [[ "${DOTFILES_RUN_HOMEBREW_BUNDLE:-0}" != "1" ]]; then
+  echo "Skipping Homebrew bundle lifecycle step."
+  echo "To opt in for one apply, run: DOTFILES_RUN_HOMEBREW_BUNDLE=1 chezmoi apply"
+  exit 0
+fi
+
 echo "Setting up Homebrew packages..."
 
 if ! command -v brew >/dev/null 2>&1; then
-  echo "Installing Homebrew..."
-  NONINTERACTIVE=1 /bin/bash -c "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/HEAD/install.sh)"
+  echo "Homebrew is not installed. Install it manually before running this lifecycle step." >&2
+  exit 1
 fi
 
 if [[ -x /opt/homebrew/bin/brew ]]; then

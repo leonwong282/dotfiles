@@ -6,6 +6,12 @@ if [[ "$(uname -s)" != "Darwin" ]]; then
   exit 0
 fi
 
+if [[ "${DOTFILES_RUN_MACOS_DEFAULTS:-0}" != "1" ]]; then
+  echo "Skipping macOS defaults lifecycle step."
+  echo "To opt in for one apply, run: DOTFILES_RUN_MACOS_DEFAULTS=1 chezmoi apply"
+  exit 0
+fi
+
 osascript -e 'tell application "System Settings" to quit' >/dev/null 2>&1 || true
 osascript -e 'tell application "System Preferences" to quit' >/dev/null 2>&1 || true
 

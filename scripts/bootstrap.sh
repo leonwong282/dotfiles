@@ -306,6 +306,7 @@ maybe_apply_chezmoi() {
   fi
 
   log_warn "This will run chezmoi apply for source: $ROOT"
+  log_warn "Any chezmoi run_* lifecycle scripts in this source may execute."
   log_warn "Review the status and dry-run output above before confirming."
 
   if confirm "Run chezmoi apply now?"; then

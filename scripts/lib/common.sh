@@ -72,7 +72,20 @@ ensure_dir() {
 }
 
 repo_root() {
+  local candidate
   local root
+
+  if [[ -n "${__DOTFILES_COMMON_DIR:-}" && -d "$__DOTFILES_COMMON_DIR/../.." ]]; then
+    candidate="$(cd "$__DOTFILES_COMMON_DIR/../.." && pwd -P)"
+    if has_command git; then
+      if root="$(git -C "$candidate" rev-parse --show-toplevel 2>/dev/null)"; then
+        printf '%s\n' "$root"
+        return 0
+      fi
+    fi
+    printf '%s\n' "$candidate"
+    return 0
+  fi
 
   if has_command git; then
     if root="$(git rev-parse --show-toplevel 2>/dev/null)"; then
@@ -81,9 +94,5 @@ repo_root() {
     fi
   fi
 
-  if [[ -n "${__DOTFILES_COMMON_DIR:-}" && -d "$__DOTFILES_COMMON_DIR/../.." ]]; then
-    (cd "$__DOTFILES_COMMON_DIR/../.." && pwd -P)
-  else
-    pwd -P
-  fi
+  pwd -P
 }
