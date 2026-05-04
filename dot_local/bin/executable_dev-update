@@ -1,0 +1,242 @@
+#!/usr/bin/env bash
+set -euo pipefail
+
+DRY_RUN=0
+BREW_ONLY=0
+CHEZMOI_ONLY=0
+RUN_CLEANUP=1
+FAIL_COUNT=0
+
+usage() {
+  cat <<'EOF'
+Usage: dev-update [options]
+
+Daily development environment update helper.
+
+Options:
+  --dry-run       Print commands instead of running them
+  --brew-only     Run only the Homebrew update steps
+  --chezmoi-only  Run only the chezmoi update steps
+  --no-cleanup    Skip `brew cleanup`
+  -h, --help      Show this help
+
+Behavior:
+  - Prints concise system context.
+  - Updates Homebrew when `brew` is available.
+  - Updates the chezmoi source repo safely when `chezmoi` is available.
+  - Shows Git status for the current directory in the default mode.
+
+Safety:
+  - Does not install new packages.
+  - Does not commit or push Git changes.
+  - Does not run `chezmoi apply` automatically.
+  - Does not remove non-Homebrew files.
+EOF
+}
+
+log_info() {
+  printf '[INFO] %s\n' "$*"
+}
+
+log_warn() {
+  printf '[WARN] %s\n' "$*" >&2
+}
+
+has_command() {
+  command -v "$1" >/dev/null 2>&1
+}
+
+print_command() {
+  printf '+'
+  printf ' %q' "$@"
+  printf '\n'
+}
+
+run_step() {
+  local label="$1"
+  shift
+
+  printf '\n==> %s\n' "$label"
+  print_command "$@"
+
+  if [[ "$DRY_RUN" -eq 1 ]]; then
+    return 0
+  fi
+
+  if "$@"; then
+    return 0
+  fi
+
+  log_warn "Step failed: $label"
+  FAIL_COUNT=$((FAIL_COUNT + 1))
+  return 0
+}
+
+parse_args() {
+  while [[ $# -gt 0 ]]; do
+    case "$1" in
+      --dry-run)
+        DRY_RUN=1
+        ;;
+      --brew-only)
+        BREW_ONLY=1
+        ;;
+      --chezmoi-only)
+        CHEZMOI_ONLY=1
+        ;;
+      --no-cleanup)
+        RUN_CLEANUP=0
+        ;;
+      -h | --help)
+        usage
+        exit 0
+        ;;
+      *)
+        usage >&2
+        printf '\nUnknown option: %s\n' "$1" >&2
+        exit 2
+        ;;
+    esac
+    shift
+  done
+
+  if [[ "$BREW_ONLY" -eq 1 && "$CHEZMOI_ONLY" -eq 1 ]]; then
+    usage >&2
+    printf '\n--brew-only and --chezmoi-only cannot be used together.\n' >&2
+    exit 2
+  fi
+}
+
+system_context() {
+  local arch
+  local cwd
+  local os
+  local shell_name
+  local user_name
+
+  arch="$(uname -m 2>/dev/null || printf 'unknown')"
+  cwd="$(pwd -P)"
+  os="$(uname -s 2>/dev/null || printf 'unknown')"
+  shell_name="${SHELL:-unknown}"
+  user_name="$(id -un 2>/dev/null || printf '%s' "${USER:-unknown}")"
+
+  printf 'dev-update\n'
+  printf 'Date:  %s\n' "$(date '+%Y-%m-%d %H:%M:%S %Z' 2>/dev/null || date)"
+  printf 'OS:    %s %s\n' "$os" "$arch"
+  printf 'Shell: %s\n' "$shell_name"
+  printf 'User:  %s\n' "$user_name"
+  printf 'Cwd:   %s\n' "$cwd"
+
+  if [[ "$DRY_RUN" -eq 1 ]]; then
+    printf 'Mode:  dry-run\n'
+  fi
+}
+
+run_brew() {
+  local brew_path
+
+  if ! has_command brew; then
+    log_warn "Homebrew not found in PATH; skipping brew update, upgrade, and cleanup."
+    return 0
+  fi
+
+  brew_path="$(command -v brew)"
+
+  run_step "Homebrew update" "$brew_path" update
+  run_step "Homebrew upgrade" "$brew_path" upgrade
+
+  if [[ "$RUN_CLEANUP" -eq 1 ]]; then
+    run_step "Homebrew cleanup" "$brew_path" cleanup
+  else
+    log_info "Skipping Homebrew cleanup because --no-cleanup was provided."
+  fi
+}
+
+run_chezmoi() {
+  local source_path
+
+  if ! has_command chezmoi; then
+    log_warn "chezmoi not found in PATH; skipping chezmoi update steps."
+    return 0
+  fi
+
+  printf '\n==> Chezmoi update strategy\n'
+  printf '%s\n' "Using a safer alternative to 'chezmoi update':"
+  printf '%s\n' "  1. Fast-forward pull the chezmoi source repo when possible."
+  printf '%s\n' "  2. Show 'chezmoi diff' so changes can be reviewed before applying."
+  printf '%s\n' "This command does not run 'chezmoi apply'."
+
+  source_path="$(chezmoi source-path 2>/dev/null || true)"
+
+  if [[ -n "$source_path" && -d "$source_path" ]]; then
+    if has_command git && git -C "$source_path" rev-parse --is-inside-work-tree >/dev/null 2>&1; then
+      run_step "Chezmoi source fast-forward pull" git -C "$source_path" pull --ff-only
+    else
+      log_warn "Could not use Git in chezmoi source path: $source_path"
+    fi
+  else
+    log_warn "Could not determine chezmoi source path; skipping source pull."
+  fi
+
+  run_step "Chezmoi diff" chezmoi diff
+}
+
+show_git_status() {
+  local root
+
+  printf '\n==> Git status\n'
+
+  if ! has_command git; then
+    log_warn "git not found in PATH; skipping Git status."
+    return 0
+  fi
+
+  if ! git rev-parse --is-inside-work-tree >/dev/null 2>&1; then
+    printf 'Current directory is not inside a Git work tree.\n'
+    return 0
+  fi
+
+  root="$(git rev-parse --show-toplevel 2>/dev/null || pwd -P)"
+  printf 'Repository: %s\n' "$root"
+
+  if [[ "$DRY_RUN" -eq 1 ]]; then
+    print_command git status --short
+    return 0
+  fi
+
+  git status --short || {
+    log_warn "Could not read Git status."
+    FAIL_COUNT=$((FAIL_COUNT + 1))
+  }
+}
+
+main() {
+  parse_args "$@"
+  system_context
+
+  if [[ "$CHEZMOI_ONLY" -eq 0 ]]; then
+    run_brew
+  else
+    log_info "Skipping Homebrew steps because --chezmoi-only was provided."
+  fi
+
+  if [[ "$BREW_ONLY" -eq 0 ]]; then
+    run_chezmoi
+  else
+    log_info "Skipping chezmoi steps because --brew-only was provided."
+  fi
+
+  if [[ "$BREW_ONLY" -eq 0 && "$CHEZMOI_ONLY" -eq 0 ]]; then
+    show_git_status
+  fi
+
+  printf '\n'
+  if [[ "$FAIL_COUNT" -gt 0 ]]; then
+    log_warn "dev-update finished with $FAIL_COUNT failed step(s)."
+    return 1
+  fi
+
+  log_info "dev-update finished."
+}
+
+main "$@"

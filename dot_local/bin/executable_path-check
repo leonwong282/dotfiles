@@ -1,0 +1,235 @@
+#!/usr/bin/env bash
+set -euo pipefail
+
+usage() {
+  cat <<'EOF'
+Usage: path-check [--help]
+
+Diagnose PATH-related problems.
+
+Shows:
+  - Current shell.
+  - Current PATH entries, one per line.
+  - Duplicate PATH entries.
+  - Whether common user bin directories exist.
+  - Whether $HOME/.local/bin is in PATH.
+  - Locations of common development commands.
+  - Helpful suggestions.
+
+This command is read-only and does not modify files.
+EOF
+}
+
+has_command() {
+  command -v "$1" >/dev/null 2>&1
+}
+
+path_contains() {
+  local needle="$1"
+  local entry
+
+  IFS=':' read -r -a PATH_ENTRIES_FOR_CHECK <<< "${PATH:-}"
+  for entry in "${PATH_ENTRIES_FOR_CHECK[@]}"; do
+    if [[ "$entry" == "$needle" ]]; then
+      return 0
+    fi
+  done
+
+  return 1
+}
+
+print_shell() {
+  printf 'path-check\n'
+  printf 'SHELL: %s\n' "${SHELL:-not set}"
+  printf 'Bash:  %s\n' "${BASH_VERSION:-unknown}"
+}
+
+print_path_entries() {
+  local count
+  local display
+  local entry
+  local i
+
+  IFS=':' read -r -a PATH_ENTRIES <<< "${PATH:-}"
+  count="${#PATH_ENTRIES[@]}"
+
+  printf '\n==> PATH entries (%s)\n' "$count"
+
+  if [[ "$count" -eq 0 ]]; then
+    printf 'PATH is empty or not set.\n'
+    return 0
+  fi
+
+  for ((i = 0; i < count; i++)); do
+    entry="${PATH_ENTRIES[$i]}"
+    display="$entry"
+    if [[ -z "$display" ]]; then
+      display='(empty entry; means current directory)'
+    fi
+
+    if [[ -n "$entry" && ! -d "$entry" ]]; then
+      printf '%2d. %s [missing]\n' "$((i + 1))" "$display"
+    else
+      printf '%2d. %s\n' "$((i + 1))" "$display"
+    fi
+  done
+}
+
+print_duplicates() {
+  local count
+  local duplicate_count
+  local entry
+  local first_seen
+  local i
+  local j
+  local occurrences
+
+  IFS=':' read -r -a PATH_ENTRIES_FOR_DUPES <<< "${PATH:-}"
+  count="${#PATH_ENTRIES_FOR_DUPES[@]}"
+  duplicate_count=0
+
+  printf '\n==> Duplicate PATH entries\n'
+
+  for ((i = 0; i < count; i++)); do
+    entry="${PATH_ENTRIES_FOR_DUPES[$i]}"
+    first_seen=1
+
+    for ((j = 0; j < i; j++)); do
+      if [[ "${PATH_ENTRIES_FOR_DUPES[$j]}" == "$entry" ]]; then
+        first_seen=0
+        break
+      fi
+    done
+
+    [[ "$first_seen" -eq 1 ]] || continue
+
+    occurrences=0
+    for ((j = 0; j < count; j++)); do
+      if [[ "${PATH_ENTRIES_FOR_DUPES[$j]}" == "$entry" ]]; then
+        occurrences=$((occurrences + 1))
+      fi
+    done
+
+    if [[ "$occurrences" -gt 1 ]]; then
+      duplicate_count=$((duplicate_count + 1))
+      if [[ -z "$entry" ]]; then
+        printf '%s\n' "- (empty entry) appears $occurrences times"
+      else
+        printf '%s\n' "- $entry appears $occurrences times"
+      fi
+    fi
+  done
+
+  if [[ "$duplicate_count" -eq 0 ]]; then
+    printf 'No duplicate PATH entries found.\n'
+  fi
+}
+
+print_user_bins() {
+  local bin_dir
+  local dirs
+
+  dirs=("$HOME/.local/bin" "$HOME/bin")
+
+  printf '\n==> Common user bin directories\n'
+  for bin_dir in "${dirs[@]}"; do
+    if [[ -d "$bin_dir" ]]; then
+      printf '[OK]      %s exists\n' "$bin_dir"
+    else
+      printf '[MISSING] %s does not exist\n' "$bin_dir"
+    fi
+  done
+
+  printf '\n==> ~/.local/bin in PATH\n'
+  if path_contains "$HOME/.local/bin"; then
+    printf '[OK] %s is in PATH\n' "$HOME/.local/bin"
+  else
+    printf '[WARN] %s is not in PATH\n' "$HOME/.local/bin"
+  fi
+}
+
+print_commands() {
+  local cmd
+  local commands
+  local location
+
+  commands=(git chezmoi brew vim code python3 node npm pnpm ssh)
+
+  printf '\n==> Command locations\n'
+  for cmd in "${commands[@]}"; do
+    if has_command "$cmd"; then
+      location="$(command -v "$cmd")"
+      printf '[OK]      %-8s %s\n' "$cmd" "$location"
+    else
+      printf '[MISSING] %-8s not found in PATH\n' "$cmd"
+    fi
+  done
+}
+
+print_suggestions() {
+  local has_duplicate
+  local i
+  local j
+
+  IFS=':' read -r -a PATH_ENTRIES_FOR_SUGGESTIONS <<< "${PATH:-}"
+  has_duplicate=0
+
+  for ((i = 0; i < ${#PATH_ENTRIES_FOR_SUGGESTIONS[@]}; i++)); do
+    for ((j = 0; j < i; j++)); do
+      if [[ "${PATH_ENTRIES_FOR_SUGGESTIONS[$j]}" == "${PATH_ENTRIES_FOR_SUGGESTIONS[$i]}" ]]; then
+        has_duplicate=1
+        break 2
+      fi
+    done
+  done
+
+  printf '\n==> Suggestions\n'
+
+  if ! path_contains "$HOME/.local/bin"; then
+    printf '%s\n' '- Add $HOME/.local/bin early in PATH so chezmoi-installed commands are available.'
+    printf '  For zsh login shells, PATH setup usually belongs in ~/.zprofile.\n'
+  fi
+
+  if [[ "$has_duplicate" -eq 1 ]]; then
+    printf '%s\n' '- Remove duplicate PATH additions from shell startup files to make command lookup predictable.'
+  fi
+
+  if ! has_command brew; then
+    printf '%s\n' '- Homebrew is not in PATH. On Apple Silicon macOS, check /opt/homebrew/bin; on Intel macOS, check /usr/local/bin.'
+  fi
+
+  if ! has_command code; then
+    printf '%s\n' "- VS Code's 'code' command is missing. In VS Code, run: Shell Command: Install 'code' command in PATH."
+  fi
+
+  if ! has_command chezmoi; then
+    printf '%s\n' '- chezmoi is missing from PATH. Install or expose it before running dotfiles update workflows.'
+  fi
+
+  printf '%s\n' '- This report is read-only; make PATH changes in your shell startup files, then restart the shell.'
+}
+
+main() {
+  case "${1:-}" in
+    "")
+      ;;
+    -h | --help)
+      usage
+      return 0
+      ;;
+    *)
+      usage >&2
+      printf '\nUnknown option: %s\n' "$1" >&2
+      return 2
+      ;;
+  esac
+
+  print_shell
+  print_path_entries
+  print_duplicates
+  print_user_bins
+  print_commands
+  print_suggestions
+}
+
+main "$@"
