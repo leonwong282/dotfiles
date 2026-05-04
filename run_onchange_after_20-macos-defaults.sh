@@ -2,30 +2,49 @@
 set -euo pipefail
 
 if [[ "$(uname -s)" != "Darwin" ]]; then
-  echo "Skipping macOS defaults: this script is intended for macOS."
   exit 0
 fi
 
+# 增加交互式檢查，與 Homebrew 腳本一致
+if [[ -t 0 || "${DOTFILES_RUN_MACOS_DEFAULTS:-0}" == "1" ]]; then
+    echo "--------------------------------------------------------"
+    echo "🖥️  macOS System Preferences Check"
+    echo "--------------------------------------------------------"
+else
+    exit 0
+fi
+
+# 詢問使用者是否執行，避免靜默修改系統行為
 if [[ "${DOTFILES_RUN_MACOS_DEFAULTS:-0}" != "1" ]]; then
-  echo "Skipping macOS defaults lifecycle step."
-  echo "To opt in for one apply, run: DOTFILES_RUN_MACOS_DEFAULTS=1 chezmoi apply"
-  exit 0
+    read -p "Do you want to apply macOS system preferences (Finder, Dock, Keyboard, etc.)? (y/N) " -n 1 -r
+    echo
+    if [[ ! $REPLY =~ ^[Yy]$ ]]; then
+        echo "Skipping macOS preferences."
+        exit 0
+    fi
 fi
 
 osascript -e 'tell application "System Settings" to quit' >/dev/null 2>&1 || true
 osascript -e 'tell application "System Preferences" to quit' >/dev/null 2>&1 || true
 
-echo "Configuring macOS preferences..."
+echo "🚀 Configuring macOS preferences..."
+
+# 請求 sudo 權限（如果尚未授權）
+# 這會彈出一次密碼提示，之後的 sudo 指令將直接使用快取
+if ! sudo -n true 2>/dev/null; then
+    echo "🔐 Some settings (like boot sound) require admin privileges."
+    sudo -v
+fi
+
+# 保持 sudo 權限直到腳本結束
+while true; do sudo -n true; sleep 60; kill -0 "$$" || exit; done 2>/dev/null &
 
 ###############################################################################
 # General UI/UX
 ###############################################################################
 
-if sudo -n true 2>/dev/null; then
-  sudo nvram SystemAudioVolume=" " || true
-else
-  echo "Skipping nvram boot sound setting because sudo is not already authenticated."
-fi
+# 現在可以放心地執行 sudo 命令了
+sudo nvram SystemAudioVolume=" " || true
 
 defaults write com.apple.menuextra.battery ShowPercent -string "YES"
 
@@ -107,4 +126,4 @@ for app in Dock Finder SystemUIServer; do
   killall "${app}" >/dev/null 2>&1 || true
 done
 
-echo "macOS preferences configured. Some changes may require logout or restart."
+echo "✅ macOS preferences configured. Some changes may require logout or restart."

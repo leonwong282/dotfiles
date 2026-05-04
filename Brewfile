@@ -59,7 +59,7 @@ brew "zsh-completions"         # Additional completion definitions for Zsh
 # ====================
 # Editors
 # ====================
-brew "neovim"           # Hyperextensible Vim-based text editor
+# brew "neovim"           # Hyperextensible Vim-based text editor
 brew "vim"              # Vi Improved text editor
 
 # ====================
@@ -125,7 +125,7 @@ cask "antigravity"      # AI-powered development tool
 cask "claude-code"      # Interactive CLI for Claude
 cask "codex-app"        # AI code generation companion
 cask "qt-creator"       # Integrated development environment for Qt
-cask "mactex-no-gui"    # TeX distribution for macOS (minimal)
+# cask "mactex-no-gui"    # TeX distribution for macOS (minimal)
 cask "docker-desktop"  # GUI for managing Docker containers and images
 
 # ====================

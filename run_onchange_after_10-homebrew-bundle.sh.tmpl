@@ -4,34 +4,60 @@ set -euo pipefail
 # Brewfile checksum: {{ include "Brewfile" | sha256sum }}
 
 if [[ "$(uname -s)" != "Darwin" ]]; then
-  echo "Skipping Homebrew setup: this script is intended for macOS."
   exit 0
 fi
 
-if [[ "${DOTFILES_RUN_HOMEBREW_BUNDLE:-0}" != "1" ]]; then
-  echo "Skipping Homebrew bundle lifecycle step."
-  echo "To opt in for one apply, run: DOTFILES_RUN_HOMEBREW_BUNDLE=1 chezmoi apply"
-  exit 0
+# 交互式環境檢查
+if [[ -t 0 || "${DOTFILES_RUN_HOMEBREW_BUNDLE:-0}" == "1" ]]; then
+    echo "--------------------------------------------------------"
+    echo "📦 Homebrew Bundle Check"
+    echo "--------------------------------------------------------"
+    echo "Detected changes in Brewfile or requested manual run."
+else
+    # 非交互模式且未指定變數，則靜默退出
+    exit 0
 fi
-
-echo "Setting up Homebrew packages..."
 
 if ! command -v brew >/dev/null 2>&1; then
-  echo "Homebrew is not installed. Install it manually before running this lifecycle step." >&2
-  exit 1
+  echo "❌ Homebrew is not installed. Skipping software installation."
+  exit 0
 fi
 
+# 初始化 Homebrew 環境
 if [[ -x /opt/homebrew/bin/brew ]]; then
   eval "$(/opt/homebrew/bin/brew shellenv)"
 elif [[ -x /usr/local/bin/brew ]]; then
   eval "$(/usr/local/bin/brew shellenv)"
 fi
 
-if ! command -v brew >/dev/null 2>&1; then
-  echo "Homebrew was not found after installation." >&2
-  exit 1
+# 檢查 Brewfile 是否有大型軟體包 (如 MacTeX) 並給予警告
+if grep -q "mactex" "${HOME}/Brewfile"; then
+    echo "⚠️  Note: Brewfile contains MacTeX, which is a very large download (several GBs)."
 fi
 
-brew bundle --file="${HOME}/Brewfile"
+# 執行安裝
+echo "🚀 Preparing to sync software via 'brew bundle'..."
 
-echo "Homebrew bundle complete."
+# 詢問是否先運行 brew update (通常很慢)
+# 預設不更新 Homebrew 自身以求快速，除非使用者想要
+export HOMEBREW_NO_AUTO_UPDATE=1
+echo "💡 (Homebrew auto-update is disabled for speed)"
+
+# 處理升級邏輯
+if [[ "${HOMEBREW_BUNDLE_NO_UPGRADE:-0}" == "1" ]]; then
+    echo "Running in NO-UPGRADE mode..."
+    brew bundle --file="${HOME}/Brewfile" --no-upgrade
+else
+    read -p "Do you want to UPGRADE existing packages to their latest versions? (y/N) " -n 1 -r
+    echo
+    if [[ $REPLY =~ ^[Yy]$ ]]; then
+        unset HOMEBREW_NO_AUTO_UPDATE # 恢復自動更新以獲取最新版本
+        echo "Running full upgrade (this may take a long time)..."
+        brew bundle --file="${HOME}/Brewfile"
+    else
+        echo "Installing missing packages only..."
+        brew bundle --file="${HOME}/Brewfile" --no-upgrade
+    fi
+fi
+
+echo "✅ Homebrew bundle sync complete."

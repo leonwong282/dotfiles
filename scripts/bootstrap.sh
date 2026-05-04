@@ -307,18 +307,12 @@ maybe_apply_chezmoi() {
 
   log_warn "This will run chezmoi apply for source: $ROOT"
   log_warn "Any chezmoi run_* lifecycle scripts in this source may execute."
-  log_warn "Review the status and dry-run output above before confirming."
+  log_warn "You will be prompted individually for software installation and system preferences."
 
   if confirm "Run chezmoi apply now?"; then
-    if is_macos && confirm "Also install/update all Homebrew packages from Brewfile?"; then
-      log_info "Applying with Homebrew bundle enabled..."
-      DOTFILES_RUN_HOMEBREW_BUNDLE=1 run_cmd chezmoi --source "$ROOT" apply
-    else
-      run_cmd chezmoi --source "$ROOT" apply
-    fi
+    run_cmd chezmoi --source "$ROOT" apply
     ok "chezmoi apply completed"
   else
-
     log_info "Apply cancelled."
   fi
 }
