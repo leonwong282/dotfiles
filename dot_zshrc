@@ -2,14 +2,6 @@
 # Loaded for every new terminal window
 
 # ============================================
-# Environment Variables - API Keys, etc.
-# ============================================
-
-# Claude Code
-export ANTHROPIC_API_KEY=sk-xxx
-export ANTHROPIC_BASE_URL=https://xxx
-
-# ============================================
 # Environment Variables
 # ============================================
 
@@ -29,6 +21,11 @@ export HISTFILE="$HOME/.zsh_history"
 # Less pager settings
 export LESS="-R"              # Enable color in less
 export PAGER="less"
+
+# Local secrets. Keep real credentials out of this repository.
+if [[ -r "$HOME/.config/zsh/secrets.zsh" ]]; then
+    source "$HOME/.config/zsh/secrets.zsh"
+fi
 
 # ============================================
 # Aliases
@@ -62,10 +59,10 @@ alias mv='mv -i'
 alias rm='rm -i'
 
 # Use modern tools if installed
-alias cat='bat'           # bat: cat with syntax highlighting
-alias ls='eza'             # eza: modern ls
-alias find='fd'            # fd: modern find
-alias grep='rg'            # ripgrep: fast grep
+command -v bat >/dev/null 2>&1 && alias cat='bat'
+command -v eza >/dev/null 2>&1 && alias ls='eza'
+command -v fd >/dev/null 2>&1 && alias find='fd'
+command -v rg >/dev/null 2>&1 && alias grep='rg'
 
 # Show PATH entries one per line
 alias path='echo $PATH | tr ":" "\n"'
@@ -121,3 +118,8 @@ extract() {
 # Or use Starship prompt:
 # eval "$(starship init zsh)"
 
+# Machine-specific overrides should be sourced last so they can adjust aliases,
+# paths, or tool settings without changing the shared dotfiles repo.
+if [[ -r "$HOME/.config/zsh/local.zsh" ]]; then
+    source "$HOME/.config/zsh/local.zsh"
+fi

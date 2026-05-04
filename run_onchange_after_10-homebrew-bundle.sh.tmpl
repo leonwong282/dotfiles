@@ -1,0 +1,31 @@
+#!/usr/bin/env bash
+set -euo pipefail
+
+# Brewfile checksum: {{ include "Brewfile" | sha256sum }}
+
+if [[ "$(uname -s)" != "Darwin" ]]; then
+  echo "Skipping Homebrew setup: this script is intended for macOS."
+  exit 0
+fi
+
+echo "Setting up Homebrew packages..."
+
+if ! command -v brew >/dev/null 2>&1; then
+  echo "Installing Homebrew..."
+  NONINTERACTIVE=1 /bin/bash -c "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/HEAD/install.sh)"
+fi
+
+if [[ -x /opt/homebrew/bin/brew ]]; then
+  eval "$(/opt/homebrew/bin/brew shellenv)"
+elif [[ -x /usr/local/bin/brew ]]; then
+  eval "$(/usr/local/bin/brew shellenv)"
+fi
+
+if ! command -v brew >/dev/null 2>&1; then
+  echo "Homebrew was not found after installation." >&2
+  exit 1
+fi
+
+brew bundle --file="${HOME}/Brewfile"
+
+echo "Homebrew bundle complete."

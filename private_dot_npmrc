@@ -1,4 +1,7 @@
-strict-ssl=false
+# Keep authentication tokens out of this managed file.
+# Use `npm login` or a local, untracked config for registry credentials.
+
+strict-ssl=true
 
 # Default save behavior
 save-exact=true           # Save exact versions

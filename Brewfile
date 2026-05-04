@@ -17,6 +17,7 @@ brew "zsh"              # Shell
 brew "curl"             # Transfer data
 brew "wget"             # Download utility
 brew "chezmoi"          # Manage your dotfiles across multiple machines
+brew "mas"              # Mac App Store CLI for Brewfile mas entries
 
 # ====================
 # CLI Tools - Development
@@ -51,6 +52,7 @@ brew "eza"              # A modern, feature-rich replacement for 'ls'
 brew "fd"               # A fast and user-friendly alternative to 'find'
 brew "fzf"              # Fuzzy finder
 brew "ripgrep"          # ripgrep: fast grep
+brew "age"              # File encryption for future chezmoi secrets
 brew "genact"           # A nonsense activity generator (pretend to be busy)
 brew "yt-dlp"
 

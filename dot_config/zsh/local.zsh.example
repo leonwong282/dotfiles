@@ -1,0 +1,4 @@
+# Machine-specific shell overrides.
+# Put host-only aliases, PATH entries, and temporary experiments here.
+
+# export PATH="$HOME/work/bin:$PATH"
