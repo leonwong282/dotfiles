@@ -1,98 +1,375 @@
-" Comments in Vimscript start with a `"`.
+" ~/.vimrc
+" Professional, plugin-light Vim configuration managed by chezmoi as dot_vimrc.
+" Targets Vim 8.2+ on macOS and Linux. Keep this file Vimscript-only.
 
-" If you open this file in Vim, it'll be syntax highlighted for you.
+if exists('g:skip_dotfiles_vimrc')
+  finish
+endif
 
-" Vim is based on Vi. Setting `nocompatible` switches from the default
-" Vi-compatibility mode and enables useful Vim functionality. This
-" configuration option turns out not to be necessary for the file named
-" '~/.vimrc', because Vim automatically enters nocompatible mode if that file
-" is present. But we're including it here just in case this config file is
-" loaded some other way (e.g. saved as `foo`, and then Vim started with
-" `vim -u foo`).
-set nocompatible
+if &compatible
+  set nocompatible
+endif
 
-" Turn on syntax highlighting.
-syntax on
+scriptencoding utf-8
 
-" Disable the default Vim startup message.
+if v:version < 802
+  echohl WarningMsg
+  echom 'This vimrc targets Vim 8.2+; continuing with guarded defaults.'
+  echohl None
+endif
+
+" Leader keys must be set before any mappings or plugin configuration.
+let mapleader = "\<Space>"
+let maplocalleader = ','
+
+" ---------------------------------------------------------------------------
+" Encoding, Filetypes, Syntax
+" ---------------------------------------------------------------------------
+
+set encoding=utf-8
+set fileencodings=utf-8,ucs-bom,latin1
+set fileformats=unix,dos,mac
+
+if has('autocmd')
+  filetype plugin indent on
+endif
+
+if has('syntax') && !exists('syntax_on')
+  syntax enable
+endif
+
+" Match % across HTML tags, shell blocks, and other common pairs when available.
+if !exists('g:loaded_matchit') && findfile('plugin/matchit.vim', &runtimepath) ==# ''
+  silent! runtime! macros/matchit.vim
+endif
+
+" ---------------------------------------------------------------------------
+" User Interface
+" ---------------------------------------------------------------------------
+
+set number
+if exists('+relativenumber')
+  set relativenumber
+endif
+set cursorline
+set ruler
+set showcmd
+set laststatus=2
 set shortmess+=I
 
-" Show line numbers.
-set number
+if exists('+signcolumn')
+  set signcolumn=yes
+endif
 
-" This enables relative line numbering mode. With both number and
-" relativenumber enabled, the current line shows the true line number, while
-" all other lines (above and below) are numbered relative to the current line.
-" This is useful because you can tell, at a glance, what count is needed to
-" jump up or down to a particular line, by {count}k to go up or {count}j to go
-" down.
-set relativenumber
+set wildmenu
+set wildmode=longest:full,full
+set wildignore+=*.o,*.obj,*.pyc,*.class,*.swp,*.DS_Store
+set wildignore+=*/.git/*,*/.hg/*,*/.svn/*,*/node_modules/*
 
-" Always show the status line at the bottom, even if you only have one window open.
-set laststatus=2
+set scrolloff=5
+set sidescrolloff=8
+set display+=lastline
+if has('patch-7.4.2109')
+  set display+=truncate
+endif
 
-" The backspace key has slightly unintuitive behavior by default. For example,
-" by default, you can't backspace before the insertion point set with 'i'.
-" This configuration makes backspace behave more reasonably, in that you can
-" backspace over anything.
-set backspace=indent,eol,start
+if exists('+termguicolors')
+      \ && ($COLORTERM =~# 'truecolor\|24bit'
+      \ || $TERM_PROGRAM =~# 'iTerm\|WezTerm'
+      \ || $TERM =~# '^\(xterm-kitty\|wezterm\)')
+  set termguicolors
+endif
 
-" By default, Vim doesn't let you hide a buffer (i.e. have a buffer that isn't
-" shown in any window) that has unsaved changes. This is to prevent you from "
-" forgetting about unsaved changes and then quitting e.g. via `:qa!`. We find
-" hidden buffers helpful enough to disable this protection. See `:help hidden`
-" for more information on this.
-set hidden
+if !has('gui_running') && &t_Co < 256 && $TERM =~# '256color'
+  set t_Co=256
+endif
 
-" This setting makes search case-insensitive when all characters in the string
-" being searched are lowercase. However, the search becomes case-sensitive if
-" it contains any capital letters. This makes searching more convenient.
+" ---------------------------------------------------------------------------
+" Search
+" ---------------------------------------------------------------------------
+
+set incsearch
+set hlsearch
 set ignorecase
 set smartcase
 
-" Enable searching as you type, rather than waiting till you press enter.
-set incsearch
+" ---------------------------------------------------------------------------
+" Editing Behavior
+" ---------------------------------------------------------------------------
 
-" Unbind some useless/annoying default key bindings.
-nmap Q <Nop> " 'Q' in normal mode enters Ex mode. You almost never want this.
+set backspace=indent,eol,start
+set hidden
+set confirm
+set autoread
+set history=1000
+set splitbelow
+set splitright
+set switchbuf=useopen,usetab
+set noerrorbells
+set visualbell
+set t_vb=
+set nojoinspaces
 
-" Disable audible bell because it's annoying.
-set noerrorbells visualbell t_vb=
+if has('mouse')
+  set mouse=a
+endif
 
-" Enable mouse support. You should avoid relying on this too much, but it can
-" sometimes be convenient.
-set mouse+=a
+set timeout
+set timeoutlen=500
+set ttimeout
+set ttimeoutlen=100
 
-" Try to prevent bad habits like using the arrow keys for movement. This is
-" not the only possible bad habit. For example, holding down the h/j/k/l keys
-" for movement, rather than using more efficient movement commands, is also a
-" bad habit. The former is enforceable through a .vimrc, while we don't know
-" how to prevent the latter.
-" Do this in normal mode...
-nnoremap <Left>  :echoe "Use h"<CR>
-nnoremap <Right> :echoe "Use l"<CR>
-nnoremap <Up>    :echoe "Use k"<CR>
-nnoremap <Down>  :echoe "Use j"<CR>
-" ...and in insert mode
-inoremap <Left>  <ESC>:echoe "Use h"<CR>
-inoremap <Right> <ESC>:echoe "Use l"<CR>
-inoremap <Up>    <ESC>:echoe "Use k"<CR>
-inoremap <Down>  <ESC>:echoe "Use j"<CR>
+set wrap
+set linebreak
+if exists('+breakindent')
+  set breakindent
+endif
 
-call plug#begin()
+" Q enters Ex mode by default; formatting is available as gq.
+nnoremap Q <Nop>
 
-Plug 'mhinz/vim-startify'
-Plug 'python-mode/python-mode', { 'for': 'python', 'branch': 'develop' }
+" ---------------------------------------------------------------------------
+" Indentation
+" ---------------------------------------------------------------------------
 
-call plug#end()
+set expandtab
+set tabstop=2
+set softtabstop=2
+set shiftwidth=2
+set shiftround
+set smarttab
+set autoindent
 
-" python-mode
-let g:pymode_python = 'python3'
-let g:pymode_trim_whitespaces = 1
-let g:pymode_doc = 1
-let g:pymode_doc_bind = 'K'
-let g:pymode_rope_goto_definition_bind = "<C-]>"
-let g:pymode_lint = 1
-let g:pymode_lint_checkers = ['pyflakes','pep8','mccabe','pylint']
-let g:pymode_options_max_line_length = 120
+" ---------------------------------------------------------------------------
+" File Safety
+" ---------------------------------------------------------------------------
 
+let s:vim_state_dir = expand('~/.vim')
+let s:backup_dir = s:vim_state_dir . '/backup'
+let s:swap_dir = s:vim_state_dir . '/swap'
+let s:undo_dir = s:vim_state_dir . '/undo'
+
+function! s:EnsureDir(path) abort
+  if !isdirectory(a:path)
+    silent! call mkdir(a:path, 'p', 0700)
+  endif
+  return isdirectory(a:path) && filewritable(a:path) == 2
+endfunction
+
+if s:EnsureDir(s:backup_dir)
+  let &backupdir = s:backup_dir . '//'
+  set backup
+  set writebackup
+else
+  set nobackup
+  set nowritebackup
+endif
+
+if s:EnsureDir(s:swap_dir)
+  let &directory = s:swap_dir . '//'
+else
+  setglobal noswapfile
+  setlocal noswapfile
+endif
+
+if has('persistent_undo') && exists('+undofile') && s:EnsureDir(s:undo_dir)
+  let &undodir = s:undo_dir . '//'
+  set undofile
+endif
+
+" ---------------------------------------------------------------------------
+" Clipboard
+" ---------------------------------------------------------------------------
+
+" Use the system clipboard only when Vim was compiled for it and the session
+" has a safe clipboard target. In headless SSH sessions this stays untouched.
+if has('clipboard')
+  let s:in_ssh = !empty($SSH_CONNECTION) || !empty($SSH_TTY) || !empty($SSH_CLIENT)
+  if !s:in_ssh && (has('mac') || has('macunix') || has('gui_macvim'))
+    set clipboard=unnamed
+  elseif !s:in_ssh && (has('gui_running') || !empty($DISPLAY) || !empty($WAYLAND_DISPLAY))
+    silent! set clipboard=unnamedplus
+  endif
+  unlet s:in_ssh
+endif
+
+" ---------------------------------------------------------------------------
+" Commands
+" ---------------------------------------------------------------------------
+
+function! s:VimrcPath() abort
+  if exists('$MYVIMRC') && !empty($MYVIMRC)
+    return $MYVIMRC
+  endif
+  return expand('~/.vimrc')
+endfunction
+
+function! s:EditVimrc() abort
+  execute 'edit' fnameescape(s:VimrcPath())
+endfunction
+
+function! s:ReloadVimrc() abort
+  execute 'source' fnameescape(s:VimrcPath())
+  echo 'Reloaded ' . s:VimrcPath()
+endfunction
+
+function! s:TrimWhitespace() abort
+  let l:view = winsaveview()
+  let l:search = @/
+  silent! keeppatterns %s/\s\+$//e
+  let @/ = l:search
+  call winrestview(l:view)
+endfunction
+
+command! -bar EditVimrc call <SID>EditVimrc()
+command! -bar ReloadVimrc call <SID>ReloadVimrc()
+command! -bar TrimWhitespace call <SID>TrimWhitespace()
+
+" ---------------------------------------------------------------------------
+" Mappings
+" ---------------------------------------------------------------------------
+
+nnoremap <silent> <leader>/ :nohlsearch<CR>
+nnoremap <silent> <leader>w :update<CR>
+nnoremap <silent> <leader>q :quit<CR>
+
+nnoremap <silent> <C-h> <C-w>h
+nnoremap <silent> <C-j> <C-w>j
+nnoremap <silent> <C-k> <C-w>k
+nnoremap <silent> <C-l> <C-w>l
+
+nnoremap <silent> <leader>= <C-w>=
+nnoremap <silent> <leader>+ :resize +3<CR>
+nnoremap <silent> <leader>- :resize -3<CR>
+nnoremap <silent> <leader>> :vertical resize +5<CR>
+nnoremap <silent> <leader>< :vertical resize -5<CR>
+
+nnoremap <silent> [b :bprevious<CR>
+nnoremap <silent> ]b :bnext<CR>
+nnoremap <silent> <leader>bb :buffer #<CR>
+nnoremap <silent> <leader>bd :bdelete<CR>
+
+nnoremap <silent> <leader>mj :move .+1<CR>==
+nnoremap <silent> <leader>mk :move .-2<CR>==
+xnoremap <silent> <leader>mj :move '>+1<CR>gv=gv
+xnoremap <silent> <leader>mk :move '<-2<CR>gv=gv
+
+if exists('+relativenumber')
+  nnoremap <silent> <leader>rn :set relativenumber!<CR>
+endif
+
+nnoremap <silent> <leader>ev :EditVimrc<CR>
+nnoremap <silent> <leader>rv :ReloadVimrc<CR>
+
+xnoremap < <gv
+xnoremap > >gv
+
+" ---------------------------------------------------------------------------
+" Autocommands
+" ---------------------------------------------------------------------------
+
+if has('autocmd')
+  augroup dotfiles_vimrc_restore_cursor
+    autocmd!
+    autocmd BufReadPost *
+          \ if line("'\"") >= 1
+          \ && line("'\"") <= line('$')
+          \ && index(['gitcommit', 'gitrebase', 'hgcommit', 'svn'], &filetype) == -1
+          \ && !&diff
+          \ | execute 'normal! g`"'
+          \ | endif
+  augroup END
+
+  if exists('##TextYankPost') && exists('*matchaddpos') && exists('*timer_start')
+    function! s:DeleteYankMatch(id, timer) abort
+      silent! call matchdelete(a:id)
+    endfunction
+
+    function! s:HighlightYank() abort
+      if get(v:event, 'operator', '') !=# 'y'
+        return
+      endif
+
+      let l:start = getpos("'[")
+      let l:end = getpos("']")
+      if l:start[1] <= 0 || l:end[1] <= 0
+        return
+      endif
+
+      let l:last_line = min([l:end[1], l:start[1] + 80])
+      let l:positions = []
+      for lnum in range(l:start[1], l:last_line)
+        let l:col_start = lnum == l:start[1] ? l:start[2] : 1
+        let l:col_end = lnum == l:end[1] ? l:end[2] : col([lnum, '$'])
+        call add(l:positions, [lnum, l:col_start, max([1, l:col_end - l:col_start + 1])])
+      endfor
+
+      let l:id = matchaddpos('IncSearch', l:positions, 10)
+      call timer_start(180, function('<SID>DeleteYankMatch', [l:id]))
+    endfunction
+
+    augroup dotfiles_vimrc_yank
+      autocmd!
+      autocmd TextYankPost * call <SID>HighlightYank()
+    augroup END
+  endif
+
+  if exists('##VimResized')
+    augroup dotfiles_vimrc_resize
+      autocmd!
+      autocmd VimResized * wincmd =
+    augroup END
+  endif
+
+  augroup dotfiles_vimrc_indent
+    autocmd!
+    autocmd FileType python setlocal tabstop=4 softtabstop=4 shiftwidth=4 expandtab
+    autocmd FileType go setlocal tabstop=4 softtabstop=0 shiftwidth=4 noexpandtab
+    autocmd FileType make setlocal tabstop=4 softtabstop=0 shiftwidth=4 noexpandtab
+    autocmd FileType c,cpp,java,cs setlocal tabstop=4 softtabstop=4 shiftwidth=4 expandtab
+    autocmd FileType vim setlocal tabstop=2 softtabstop=2 shiftwidth=2 expandtab
+    autocmd FileType json,yaml,html,css,scss,javascript,typescript,ruby,sh,zsh,markdown setlocal tabstop=2 softtabstop=2 shiftwidth=2 expandtab
+  augroup END
+endif
+
+" ---------------------------------------------------------------------------
+" Optional Plugins
+" ---------------------------------------------------------------------------
+
+" Vim 8 native packages under ~/.vim/pack/* load without any configuration.
+" If vim-plug is installed, keep the existing lightweight plugin list.
+let g:startify_change_to_dir = get(g:, 'startify_change_to_dir', 0)
+let g:startify_session_autoload = get(g:, 'startify_session_autoload', 0)
+let g:startify_session_persistence = get(g:, 'startify_session_persistence', 0)
+
+let g:pymode_python = get(g:, 'pymode_python', 'python3')
+let g:pymode_trim_whitespaces = get(g:, 'pymode_trim_whitespaces', 0)
+let g:pymode_doc = get(g:, 'pymode_doc', 1)
+let g:pymode_doc_bind = get(g:, 'pymode_doc_bind', 'K')
+let g:pymode_rope_goto_definition_bind = get(g:, 'pymode_rope_goto_definition_bind', '<C-]>')
+let g:pymode_lint = get(g:, 'pymode_lint', 1)
+let g:pymode_lint_checkers = get(g:, 'pymode_lint_checkers', ['pyflakes', 'pep8', 'mccabe', 'pylint'])
+let g:pymode_options_max_line_length = get(g:, 'pymode_options_max_line_length', 120)
+
+let s:vim_plug_path = expand('~/.vim/autoload/plug.vim')
+let s:has_vim_plug = exists('*plug#begin') || filereadable(s:vim_plug_path)
+
+if s:has_vim_plug
+  call plug#begin(expand('~/.vim/plugged'))
+  Plug 'mhinz/vim-startify'
+  Plug 'python-mode/python-mode', { 'for': 'python', 'branch': 'develop' }
+  call plug#end()
+endif
+
+unlet s:vim_plug_path s:has_vim_plug
+
+" ---------------------------------------------------------------------------
+" Local Overrides
+" ---------------------------------------------------------------------------
+
+for s:local_vimrc in [expand('~/.vimrc.local'), expand('~/.vim/vimrc.local')]
+  if filereadable(s:local_vimrc)
+    execute 'source' fnameescape(s:local_vimrc)
+  endif
+endfor
+unlet s:local_vimrc
