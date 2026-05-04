@@ -4,6 +4,8 @@
 # Syntax highlighting should stay last among plugins because it wraps ZLE.
 
 if [[ -n "${HOMEBREW_PREFIX:-}" ]]; then
+    # PERF: plugin source cost is paid every interactive startup. Keep this list
+    # intentionally small; add heavier plugins through local.post.zsh.
     zsh_source "$HOMEBREW_PREFIX/share/zsh-autosuggestions/zsh-autosuggestions.zsh"
     zsh_source "$HOMEBREW_PREFIX/share/zsh-syntax-highlighting/zsh-syntax-highlighting.zsh"
 fi

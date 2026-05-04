@@ -34,6 +34,7 @@ brew "awscli"           # Universal Command Line Interface for AWS
 brew "cloudflare-wrangler"   # CLI tool for Cloudflare Workers development
 brew "vercel-cli"       # Command-line interface for Vercel platform
 brew "docker"           # Lightweight container
+brew "docker-completion" # Zsh completions for Docker CLI
 brew "qt"               # Cross-platform application development framework
 brew "gemini-cli"       # CLI tool for interacting with Google Gemini AI
 brew "stripe/stripe-cli/stripe" # Official Stripe CLI tool for payment integration

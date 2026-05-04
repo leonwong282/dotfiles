@@ -5,4 +5,6 @@
 # templates later.
 
 zsh_source "secrets.zsh"
+# PERF: secrets.d is optional. Keep files here small and avoid commands that
+# contact password managers or the network during every shell startup.
 zsh_source_dir "secrets.d"

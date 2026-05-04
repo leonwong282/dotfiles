@@ -10,6 +10,8 @@
 # hand on systems that do not yet have the full dotfiles applied.
 : "${ZSH_CONFIG_DIR:=${XDG_CONFIG_HOME:-$HOME/.config}/zsh}"
 
+# PERF: zprof is intentionally opt-in because loading the profiler and printing
+# its report would add work to every shell startup.
 # Enable one-off startup profiling with `ZSH_PROFILE=1 zsh -i`.
 if [[ "${ZSH_PROFILE:-0}" == "1" ]]; then
     zmodload zsh/zprof 2>/dev/null || true
@@ -27,6 +29,8 @@ zsh_source "lib/path.zsh"
 
 # Load from low-level environment to user overrides. Later files may depend on
 # earlier setup and may intentionally override earlier aliases or variables.
+# PERF: each module source is cheap, but the modules themselves may invoke
+# external tools. Use `ZSH_PROFILE=1 zsh -i` after changing this order.
 for module in \
     modules/00-path.zsh \
     modules/05-local.pre.zsh \
@@ -45,6 +49,6 @@ do
     zsh_source "$module"
 done
 
-if [[ "${ZSH_PROFILE:-0}" == "1" ]] && (( $+functions[zprof] )); then
+if [[ "${ZSH_PROFILE:-0}" == "1" ]] && (( $+builtins[zprof] )); then
     zprof
 fi

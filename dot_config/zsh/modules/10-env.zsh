@@ -16,6 +16,8 @@ export LC_CTYPE="${LC_CTYPE:-en_US.UTF-8}"
 export HISTFILE="${HISTFILE:-${XDG_STATE_HOME:-$HOME/.local/state}/zsh/history}"
 export HISTSIZE="${HISTSIZE:-20000}"
 export SAVEHIST="${SAVEHIST:-20000}"
+# PERF: one filesystem check per startup. Keep it here so history never fails
+# on a fresh machine, but avoid adding more mkdir calls in hot modules.
 mkdir -p "${HISTFILE:h}"
 
 # Preserve ANSI colors in paged output.

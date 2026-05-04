@@ -8,9 +8,12 @@ zsh_has() {
 }
 
 zsh_is_macos() {
+    # PERF: `uname` is external on macOS. This helper is fine for occasional
+    # module guards, but avoid calling it in prompt hooks or tight loops.
     [[ "$(uname -s 2>/dev/null)" == "Darwin" ]]
 }
 
 zsh_is_apple_silicon() {
+    # PERF: same as zsh_is_macos; cache this in a variable if it becomes hot.
     [[ "$(uname -m 2>/dev/null)" == "arm64" ]]
 }

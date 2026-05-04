@@ -24,6 +24,8 @@ zsh_source_dir() {
     [[ "$dir" == /* ]] || dir="$ZSH_CONFIG_DIR/$dir"
     [[ -d "$dir" ]] || return 0
 
+    # PERF: directory globbing is cheap for small local override dirs, but do
+    # not put large generated trees under local.pre.d/local.post.d/secrets.d.
     for file in "$dir"/*.zsh(N); do
         source "$file"
     done

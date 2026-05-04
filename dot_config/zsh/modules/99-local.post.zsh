@@ -5,5 +5,7 @@
 # with the earlier layout.
 
 zsh_source "local.post.zsh"
+# PERF: local.post.d is an extension point. Large or slow experiments here will
+# affect every shell, so profile them before keeping them permanently.
 zsh_source_dir "local.post.d"
 zsh_source "local.zsh"

@@ -16,6 +16,8 @@ alias la='ls -A'
 alias l='ls -CF'
 
 if zsh_has eza; then
+    # PERF: zsh_has uses command lookup. A handful of checks is acceptable, but
+    # avoid growing aliases.zsh into dozens of command probes.
     alias ls='eza'
     alias ll='eza -la --group-directories-first --git'
     alias la='eza -a --group-directories-first'
@@ -39,6 +41,8 @@ alias mv='mv -i'
 alias rm='rm -i'
 
 # Explicit modern-tool shortcuts.
+# PERF: these command checks are tiny compared with compinit/tool hooks; keep
+# them guarded so fresh machines do not emit errors.
 zsh_has bat && alias batp='bat --paging=always'
 zsh_has fd && alias ff='fd'
 zsh_has rg && alias rgrep='rg'

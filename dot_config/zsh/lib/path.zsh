@@ -33,6 +33,8 @@ zsh_load_homebrew() {
     [[ -n "${__ZSH_HOMEBREW_LOADED:-}" ]] && return 0
     typeset -g __ZSH_HOMEBREW_LOADED=1
 
+    # PERF: `brew shellenv` starts the Ruby/Homebrew executable. The guard above
+    # prevents duplicate work when both .zprofile and .zshrc source PATH setup.
     if [[ -x /opt/homebrew/bin/brew ]]; then
         eval "$(/opt/homebrew/bin/brew shellenv)"
     elif [[ -x /usr/local/bin/brew ]]; then
