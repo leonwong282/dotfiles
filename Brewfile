@@ -185,4 +185,3 @@ cask "font-jetbrains-mono" # Free and open-source typeface for developers
 # Mac App Store
 # ====================
 mas "Xcode", id: 497799835 # Apple's IDE for macOS/iOS development
-mas "iSlide", id: 1489181859 # PowerPoint design resource tool
