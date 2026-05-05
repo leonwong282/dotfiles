@@ -112,6 +112,7 @@ brew "ffmpeg"           # Multimedia framework for audio/video processing
 brew "imagemagick"      # Image manipulation tool
 brew "pandoc"           # Universal document converter
 brew "tldr"             # Simplified and community help
+brew "cliproxyapi"      # Clipboard manager with API access
 
 # ====================
 # Development Applications
@@ -163,7 +164,6 @@ cask "macwhisper"       # High-quality AI transcription locally
 cask "raycast"          # Extendable launcher and productivity tool
 cask "stats"            # macOS system monitor in menu bar
 cask "alt-tab"          # Windows-like Alt-Tab switcher for macOS
-cask "clash-verge-rev"  # GUI for Clash based on Tauri
 cask "maczip"           # Archiver and unarchiver for macOS
 cask "pearcleaner"      # Open-source app uninstaller
 
