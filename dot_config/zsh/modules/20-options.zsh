@@ -27,3 +27,6 @@ setopt SHARE_HISTORY
 # Safer interactive defaults.
 setopt NO_CLOBBER
 unsetopt BEEP
+
+# Allow comments in interactive shell input, useful when pasting documented commands.
+setopt INTERACTIVE_COMMENTS
