@@ -11,7 +11,7 @@ Templates are located in `~/.config/zsh/examples/`.
 ### Secrets (`secrets.zsh`)
 Used for API keys, tokens, and sensitive endpoints.
 ```zsh
-cp ~/.config/zsh/examples/private_secrets.zsh.example ~/.config/zsh/secrets.zsh
+cp ~/.config/zsh/examples/secrets.zsh.example ~/.config/zsh/secrets.zsh
 chmod 600 ~/.config/zsh/secrets.zsh
 # Edit the file to add your real keys
 vim ~/.config/zsh/secrets.zsh

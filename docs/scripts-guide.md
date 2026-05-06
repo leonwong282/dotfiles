@@ -47,7 +47,8 @@ such as `scripts/lib/common.sh`.
 
 Chezmoi lifecycle scripts use `run_*` names. They should be rare, obvious, and
 safe. State-changing lifecycle scripts in this repo are opt-in through explicit
-environment variables.
+environment variables. macOS defaults are managed by manual scripts, not a
+chezmoi lifecycle script.
 
 ## Available Commands
 
@@ -60,6 +61,9 @@ environment variables.
 | `scripts/bootstrap.sh` | Conservative bootstrap helper. Default mode prints checks and next steps. | Read-only by default |
 | `scripts/bootstrap.sh --dry-run` | Runs read-only checks plus `chezmoi apply --dry-run`. | Read-only |
 | `scripts/bootstrap.sh --apply` | Runs `chezmoi apply` after confirmation. | Modifies home files |
+| `scripts/macos/export-defaults.sh --all` | Inspect current values for managed macOS defaults. | Read-only |
+| `scripts/macos/defaults.sh --dry-run` | Preview conservative macOS defaults commands before applying. | Read-only |
+| `scripts/macos/defaults.sh --category <name> --apply` | Apply one macOS defaults category after confirmation. | Modifies macOS user defaults |
 | `dev-update` | Manual update helper for Homebrew and chezmoi source review. | Modifies system/repo state |
 | `path-check` | PATH diagnostics and command lookup report. | Read-only |
 | `backup-dotfiles` | Local snapshot of selected dotfiles. | Writes backup files |
@@ -71,6 +75,7 @@ Use dry-run before running state-changing commands:
 
 ```zsh
 scripts/bootstrap.sh --dry-run
+scripts/macos/defaults.sh --dry-run
 dev-update --dry-run
 backup-dotfiles --dry-run
 ```
@@ -128,6 +133,29 @@ dev-update
 `dev-update` does not run `chezmoi apply`, commit, or push. It also skips
 `brew cleanup` unless `--cleanup` is passed.
 
+## macOS Defaults
+
+macOS defaults are manual and category-based. They are not run by `chezmoi
+apply`.
+
+Use this review-first flow:
+
+```zsh
+scripts/macos/export-defaults.sh --all --output tmp/macos-defaults-before.txt
+scripts/macos/defaults.sh --list
+scripts/macos/defaults.sh --dry-run
+scripts/macos/defaults.sh --category finder --dry-run
+```
+
+Apply only after reviewing the dry-run output:
+
+```zsh
+scripts/macos/defaults.sh --category finder --apply
+```
+
+Use `--no-restart` if you want to apply settings without restarting Finder,
+Dock, or SystemUIServer immediately.
+
 ## Testing Daily Commands
 
 After `chezmoi apply`, open a new shell or reload PATH, then run:
@@ -147,16 +175,15 @@ backup-dotfiles --dry-run
 ## Lifecycle Scripts
 
 Lifecycle scripts should not make `chezmoi apply` surprising. The current
-state-changing lifecycle scripts are skipped by default:
+state-changing lifecycle script is skipped by default:
 
 ```zsh
 DOTFILES_RUN_HOMEBREW_BUNDLE=1 chezmoi apply
-DOTFILES_RUN_MACOS_DEFAULTS=1 chezmoi apply
 ```
 
-Use those only when you explicitly want package reconciliation or macOS defaults
-changes during apply. Prefer manual scripts for package updates, backups,
-bootstrap work, and environment checks.
+Use it only when you explicitly want package reconciliation during apply. Prefer
+manual scripts for package updates, macOS defaults, backups, bootstrap work, and
+environment checks.
 
 ## Safety Principles
 

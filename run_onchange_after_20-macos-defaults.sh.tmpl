@@ -1,0 +1,48 @@
+#!/usr/bin/env bash
+set -euo pipefail
+
+if [[ "$(uname -s)" != "Darwin" ]]; then
+  exit 0
+fi
+
+# 交互式環境檢查
+if [[ -t 0 || "${DOTFILES_RUN_MACOS_DEFAULTS:-0}" == "1" ]]; then
+    echo "--------------------------------------------------------"
+    echo "🖥️  macOS System Preferences Check"
+    echo "--------------------------------------------------------"
+    echo "Detected changes or requested manual run for macOS defaults."
+else
+    # 非交互模式且未指定變數，則靜默退出
+    exit 0
+fi
+
+# 詢問使用者是否執行，避免靜默修改系統行為
+if [[ "${DOTFILES_RUN_MACOS_DEFAULTS:-0}" != "1" ]]; then
+    read -p "Do you want to apply macOS system preferences via scripts/macos/defaults.sh? (y/N) " -n 1 -r
+    echo
+    if [[ ! $REPLY =~ ^[Yy]$ ]]; then
+        echo "Skipping macOS preferences."
+        exit 0
+    fi
+fi
+
+osascript -e 'tell application "System Settings" to quit' >/dev/null 2>&1 || true
+osascript -e 'tell application "System Preferences" to quit' >/dev/null 2>&1 || true
+
+echo "🚀 Configuring macOS preferences..."
+
+SCRIPT_DIR="$(cd -- "$(dirname -- "${BASH_SOURCE[0]}")" && pwd -P)"
+
+if [[ -x "$SCRIPT_DIR/scripts/macos/defaults.sh" ]]; then
+    # 不使用 --no-restart 讓設定立即生效，並使用 --apply 跳過 defaults.sh 內的二次確認（如果有），
+    # 因為外層已經確認過了。
+    # 不過 scripts/macos/defaults.sh 內部目前是用 `confirm "Apply these macOS defaults now?"`
+    # 我們可以利用 YES 管道或修改 defaults.sh，但最簡單的方式是直接執行，讓它再次詢問。
+    # 這裡我們透過管道自動回覆 yes
+    yes | "$SCRIPT_DIR/scripts/macos/defaults.sh" --apply
+else
+    echo "❌ Could not find scripts/macos/defaults.sh"
+    exit 1
+fi
+
+echo "✅ macOS preferences configuration step complete."

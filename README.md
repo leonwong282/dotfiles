@@ -23,7 +23,9 @@ DOTFILES_RUN_HOMEBREW_BUNDLE=1 chezmoi init --apply https://github.com/leonwong2
 
 After the first apply, restart the terminal so `.zprofile` and `.zshrc` are loaded from the managed files.
 
-Then, follow the [Post-Setup Guide](docs/post-setup.md) to complete your manual configuration (secrets, SSH keys, etc.).
+Then, follow the guide below to complete your manual configuration:
+- [macOS Defaults Guide](docs/macos-defaults.md) - System preferences (Finder, Dock, etc.).
+- [Post-Setup Guide](docs/post-setup.md) - Secrets, SSH keys, and manual app setup.
 
 ## Daily workflow
 
@@ -165,7 +167,7 @@ Use the managed examples under `~/.config/zsh/examples/` as templates and keep r
 ## What belongs here
 
 - Shell, Git, editor, SSH client, npm, and Homebrew configuration.
-- Idempotent setup scripts for macOS defaults and package installation.
+- Manual, dry-run-first scripts for macOS defaults and package installation.
 - Safe examples for secrets and local overrides.
 
 Large files, project data, browser profiles, SSH private keys, and real application credentials should stay out of this repository.
