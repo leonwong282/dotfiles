@@ -56,20 +56,32 @@ EOF
 
 actions() {
   local line
-  local data_file="$SCRIPT_DIR/defaults.list"
+  local data_file="$SCRIPT_DIR/macos-defaults.md"
 
   if [[ ! -f "$data_file" ]]; then
     die "defaults data file not found: $data_file"
   fi
 
-  while IFS= read -r line || [[ -n "$line" ]]; do
-    # Skip empty lines and comments
-    [[ -z "$line" || "$line" == \#* ]] && continue
+  while IFS='|' read -r _ category description domain key type value restart risk _ || [[ -n "$category" ]]; do
+    # Skip empty lines, non-table lines, and markdown headers/separators
+    [[ -z "$category" || "$category" == *---* || "$category" == *"Category"* ]] && continue
+
+    # Pure Bash whitespace trimming (fast, no subshells)
+    category="${category#"${category%%[![:space:]]*}"}"; category="${category%"${category##*[![:space:]]}"}"
+    description="${description#"${description%%[![:space:]]*}"}"; description="${description%"${description##*[![:space:]]}"}"
+    domain="${domain#"${domain%%[![:space:]]*}"}"; domain="${domain%"${domain##*[![:space:]]}"}"
+    key="${key#"${key%%[![:space:]]*}"}"; key="${key%"${key##*[![:space:]]}"}"
+    type="${type#"${type%%[![:space:]]*}"}"; type="${type%"${type##*[![:space:]]}"}"
+    value="${value#"${value%%[![:space:]]*}"}"; value="${value%"${value##*[![:space:]]}"}"
+    restart="${restart#"${restart%%[![:space:]]*}"}"; restart="${restart%"${restart##*[![:space:]]}"}"
+    risk="${risk#"${risk%%[![:space:]]*}"}"; risk="${risk%"${risk##*[![:space:]]}"}"
+
+    [[ -z "$domain" ]] && continue
 
     # Replace ${SCREENSHOT_DIR} with actual value
-    line="${line//\$\{SCREENSHOT_DIR\}/$SCREENSHOT_DIR}"
+    value="${value//\$\{SCREENSHOT_DIR\}/$SCREENSHOT_DIR}"
 
-    printf '%s\n' "$line"
+    printf '%s|%s|%s|%s|%s|%s|%s|%s\n' "$category" "$description" "$domain" "$key" "$type" "$value" "$restart" "$risk"
   done < "$data_file"
 }
 
