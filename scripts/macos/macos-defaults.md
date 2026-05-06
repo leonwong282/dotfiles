@@ -24,8 +24,11 @@ The scripts `defaults.sh` and `export-defaults.sh` parse this Markdown table to 
 | finder      | Keep folders on top when sorting by name        | com.apple.finder        | _FXSortFoldersFirst                  | bool   | true              | Finder         | low  |
 | finder      | Show POSIX path in Finder title                 | com.apple.finder        | _FXShowPosixPathInTitle              | bool   | true              | Finder         | low  |
 | finder      | Set Finder new window target to Downloads       | com.apple.finder        | NewWindowTarget                      | string | PfLo              | Finder         | low  |
-| finder      | Set Finder new window target path to Downloads  | com.apple.finder        | NewWindowTargetPath                  | string | file://${HOME}/Downloads/ | Finder         | low  |
-| dock        | Set Dock tile size to 48 pixels                 | com.apple.dock          | tilesize                             | int    | 48                | Dock           | low  |
+| finder      | Set Finder new window target path to Downloads  | com.apple.finder        | NewWindowTargetPath                  | string       | file://${HOME}/Downloads/ | Finder         | low  |
+| finder      | Set default Finder group by to None             | com.apple.finder        | FXPreferredGroupBy                   | string       | None                      | Finder         | low  |
+| finder      | Set default Finder sort order to Name           | com.apple.finder        | FXPreferredSortOrder                 | string       | Name                      | Finder         | low  |
+| finder      | Set Icon View sort order to name                | com.apple.finder        | :StandardViewSettings:IconViewSettings:arrangeBy | plist-string | name              | Finder         | low  |
+| dock        | Set Dock tile size to 48 pixels                 | com.apple.dock          | tilesize                             | int          | 48                        | Dock           | low  |
 | dock        | Use scale minimize effect                       | com.apple.dock          | mineffect                            | string | scale             | Dock           | low  |
 | dock        | Show indicators for open applications           | com.apple.dock          | show-process-indicators              | bool   | true              | Dock           | low  |
 | dock        | Hide recent applications in Dock                | com.apple.dock          | show-recents                         | bool   | false             | Dock           | low  |

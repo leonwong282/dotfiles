@@ -115,7 +115,15 @@ defaults_command() {
   local type="$3"
   local value="$4"
 
-  printf 'defaults write %q %q -%s %q' "$domain" "$key" "$type" "$value"
+  if [[ "$type" == "plist-string" ]]; then
+    local path="$domain"
+    if [[ "$path" != /* && "$path" != ~* ]]; then
+      path="~/Library/Preferences/${domain}.plist"
+    fi
+    printf '/usr/libexec/PlistBuddy -c "Set %s %s" %s' "$key" "$value" "$path"
+  else
+    printf 'defaults write %q %q -%s %q' "$domain" "$key" "$type" "$value"
+  fi
 }
 
 run_defaults_write() {
@@ -127,6 +135,23 @@ run_defaults_write() {
   case "$type" in
     bool | int | float | string)
       defaults write "$domain" "$key" "-$type" "$value"
+      ;;
+    plist-string)
+      local path="$domain"
+      if [[ "$path" != /* && "$path" != ~* ]]; then
+        # Expand ~ if present in domain (though usually it's com.apple.xxx)
+        if [[ "$path" == ~* ]]; then
+           path="${path/#\~/$HOME}"
+        else
+           path="${HOME}/Library/Preferences/${domain}.plist"
+        fi
+      elif [[ "$path" == ~* ]]; then
+        path="${path/#\~/$HOME}"
+      fi
+      
+      # Use PlistBuddy to set or add the nested key
+      /usr/libexec/PlistBuddy -c "Set ${key} ${value}" "$path" 2>/dev/null || \
+      /usr/libexec/PlistBuddy -c "Add ${key} string ${value}" "$path" 2>/dev/null
       ;;
     *)
       die "unsupported defaults value type: $type"
