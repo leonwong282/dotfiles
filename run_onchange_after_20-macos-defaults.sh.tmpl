@@ -36,10 +36,8 @@ CHEZMOI_SOURCE_DIR="{{ .chezmoi.sourceDir }}"
 if [[ -x "$CHEZMOI_SOURCE_DIR/scripts/macos/defaults.sh" ]]; then
     # 不使用 --no-restart 讓設定立即生效，並使用 --apply 跳過 defaults.sh 內的二次確認（如果有），
     # 因為外層已經確認過了。
-    # 不過 scripts/macos/defaults.sh 內部目前是用 `confirm "Apply these macOS defaults now?"`
-    # 我們可以利用 YES 管道或修改 defaults.sh，但最簡單的方式是直接執行，讓它再次詢問。
-    # 這裡我們透過管道自動回覆 yes
-    yes | "$CHEZMOI_SOURCE_DIR/scripts/macos/defaults.sh" --apply
+    # 透過 --force 參數避免交互詢問
+    "$CHEZMOI_SOURCE_DIR/scripts/macos/defaults.sh" --apply --force
 else
     echo "❌ Could not find scripts/macos/defaults.sh at $CHEZMOI_SOURCE_DIR"
     exit 1

@@ -11,6 +11,7 @@ MODE="help"
 MODE_SET=0
 CATEGORY=""
 NO_RESTART=0
+FORCE=0
 SCREENSHOT_DIR="${HOME}/Pictures/Screenshots"
 
 usage() {
@@ -24,6 +25,7 @@ Options:
   --list             List available settings grouped by category.
   --dry-run          Print the exact commands that would run.
   --apply            Apply selected settings after confirmation.
+  --force            Apply settings without confirmation (use with --apply).
   --category <name>  Limit to one category.
   --no-restart       Do not restart affected apps/services after apply.
 
@@ -78,8 +80,9 @@ actions() {
 
     [[ -z "$domain" ]] && continue
 
-    # Replace ${SCREENSHOT_DIR} with actual value
+    # Replace variables with actual values
     value="${value//\$\{SCREENSHOT_DIR\}/$SCREENSHOT_DIR}"
+    value="${value//\$\{HOME\}/$HOME}"
 
     printf '%s|%s|%s|%s|%s|%s|%s|%s\n' "$category" "$description" "$domain" "$key" "$type" "$value" "$restart" "$risk"
   done < "$data_file"
@@ -259,7 +262,9 @@ apply_settings() {
     fi
   fi
 
-  if ! confirm "Apply these macOS defaults now?"; then
+  if [[ "$FORCE" -eq 1 ]]; then
+    log_info "Skipping confirmation because --force was provided."
+  elif ! confirm "Apply these macOS defaults now?"; then
     log_info "Apply cancelled."
     return 0
   fi
@@ -325,6 +330,9 @@ parse_args() {
         fi
         MODE="$requested_mode"
         MODE_SET=1
+        ;;
+      --force)
+        FORCE=1
         ;;
       --category)
         shift
