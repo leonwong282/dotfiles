@@ -163,8 +163,6 @@ cask "macwhisper"       # High-quality AI transcription locally
 # System Utilities
 # ====================
 cask "raycast"          # Extendable launcher and productivity tool
-cask "stats"            # macOS system monitor in menu bar
-cask "alt-tab"          # Windows-like Alt-Tab switcher for macOS
 cask "maczip"           # Archiver and unarchiver for macOS
 cask "pearcleaner"      # Open-source app uninstaller
 
