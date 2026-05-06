@@ -27,6 +27,10 @@ The scripts `defaults.sh` and `export-defaults.sh` parse this Markdown table to 
 | dock        | Use scale minimize effect                       | com.apple.dock          | mineffect                            | string | scale             | Dock           | low  |
 | dock        | Show indicators for open applications           | com.apple.dock          | show-process-indicators              | bool   | true              | Dock           | low  |
 | dock        | Hide recent applications in Dock                | com.apple.dock          | show-recents                         | bool   | false             | Dock           | low  |
+| dock        | Set top-left hot corner to Screen Saver         | com.apple.dock          | wvous-tl-corner                      | int    | 5                 | Dock           | low  |
+| dock        | Minimize windows into application icon          | com.apple.dock          | minimize-to-application              | bool   | true              | Dock           | low  |
+| dock        | Set top-left hot corner to Screen Saver         | com.apple.dock          | wvous-tl-corner                      | int    | 5                 | Dock           | low  |
+| dock        | Minimize windows into application icon          | com.apple.dock          | minimize-to-application              | bool   | true              | Dock           | low  |
 | screenshots | Save screenshots as PNG                         | com.apple.screencapture | type                                 | string | png               | SystemUIServer | low  |
 | screenshots | Save screenshots to Pictures/Screenshots        | com.apple.screencapture | location                             | string | ${SCREENSHOT_DIR} | SystemUIServer | low  |
 | keyboard    | Set reasonable key repeat rate                  | NSGlobalDomain          | KeyRepeat                            | int    | 2                 |                | low  |
