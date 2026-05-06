@@ -43,22 +43,19 @@ EOF
 }
 
 actions() {
-  awk '
-    /^actions\(\) \{/ {
-      in_actions = 1
-      next
-    }
-    in_actions && /^  cat <<EOF$/ {
-      in_heredoc = 1
-      next
-    }
-    in_actions && in_heredoc && /^EOF$/ {
-      exit
-    }
-    in_actions && in_heredoc {
-      print
-    }
-  ' "$DEFAULTS_SCRIPT"
+  local line
+  local data_file="$SCRIPT_DIR/defaults.list"
+
+  if [[ ! -f "$data_file" ]]; then
+    die "defaults data file not found: $data_file"
+  fi
+
+  while IFS= read -r line || [[ -n "$line" ]]; do
+    # Skip empty lines and comments
+    [[ -z "$line" || "$line" == \#* ]] && continue
+
+    printf '%s\n' "$line"
+  done < "$data_file"
 }
 
 category_exists() {

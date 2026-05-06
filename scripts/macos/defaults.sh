@@ -55,32 +55,22 @@ EOF
 }
 
 actions() {
-  cat <<EOF
-global|Show all filename extensions|NSGlobalDomain|AppleShowAllExtensions|bool|true|Finder|low
-global|Expand save panel by default|NSGlobalDomain|NSNavPanelExpandedStateForSaveMode|bool|true||low
-global|Expand save panel by default, modern key|NSGlobalDomain|NSNavPanelExpandedStateForSaveMode2|bool|true||low
-global|Expand print panel by default|NSGlobalDomain|PMPrintingExpandedStateForPrint|bool|true||low
-global|Expand print panel by default, modern key|NSGlobalDomain|PMPrintingExpandedStateForPrint2|bool|true||low
-global|Disable automatic capitalization|NSGlobalDomain|NSAutomaticCapitalizationEnabled|bool|false||low
-global|Disable smart quotes|NSGlobalDomain|NSAutomaticQuoteSubstitutionEnabled|bool|false||low
-global|Disable smart dashes|NSGlobalDomain|NSAutomaticDashSubstitutionEnabled|bool|false||low
-global|Disable automatic period substitution|NSGlobalDomain|NSAutomaticPeriodSubstitutionEnabled|bool|false||low
-global|Disable automatic spelling correction|NSGlobalDomain|NSAutomaticSpellingCorrectionEnabled|bool|false||low
-finder|Show Finder path bar|com.apple.finder|ShowPathbar|bool|true|Finder|low
-finder|Show Finder status bar|com.apple.finder|ShowStatusBar|bool|true|Finder|low
-finder|Show all filename extensions|NSGlobalDomain|AppleShowAllExtensions|bool|true|Finder|low
-finder|Search current folder by default|com.apple.finder|FXDefaultSearchScope|string|SCcf|Finder|low
-finder|Keep folders on top when sorting by name|com.apple.finder|_FXSortFoldersFirst|bool|true|Finder|low
-finder|Show POSIX path in Finder title|com.apple.finder|_FXShowPosixPathInTitle|bool|true|Finder|low
-dock|Set Dock tile size to 48 pixels|com.apple.dock|tilesize|int|48|Dock|low
-dock|Use scale minimize effect|com.apple.dock|mineffect|string|scale|Dock|low
-dock|Show indicators for open applications|com.apple.dock|show-process-indicators|bool|true|Dock|low
-dock|Hide recent applications in Dock|com.apple.dock|show-recents|bool|false|Dock|low
-screenshots|Save screenshots as PNG|com.apple.screencapture|type|string|png|SystemUIServer|low
-screenshots|Save screenshots to Pictures/Screenshots|com.apple.screencapture|location|string|${SCREENSHOT_DIR}|SystemUIServer|low
-keyboard|Set reasonable key repeat rate|NSGlobalDomain|KeyRepeat|int|2||low
-keyboard|Set reasonable initial key repeat delay|NSGlobalDomain|InitialKeyRepeat|int|15||low
-EOF
+  local line
+  local data_file="$SCRIPT_DIR/defaults.list"
+
+  if [[ ! -f "$data_file" ]]; then
+    die "defaults data file not found: $data_file"
+  fi
+
+  while IFS= read -r line || [[ -n "$line" ]]; do
+    # Skip empty lines and comments
+    [[ -z "$line" || "$line" == \#* ]] && continue
+
+    # Replace ${SCREENSHOT_DIR} with actual value
+    line="${line//\$\{SCREENSHOT_DIR\}/$SCREENSHOT_DIR}"
+
+    printf '%s\n' "$line"
+  done < "$data_file"
 }
 
 category_exists() {
