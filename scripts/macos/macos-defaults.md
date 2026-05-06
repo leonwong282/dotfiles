@@ -23,6 +23,8 @@ The scripts `defaults.sh` and `export-defaults.sh` parse this Markdown table to 
 | finder      | Search current folder by default                | com.apple.finder        | FXDefaultSearchScope                 | string | SCcf              | Finder         | low  |
 | finder      | Keep folders on top when sorting by name        | com.apple.finder        | _FXSortFoldersFirst                  | bool   | true              | Finder         | low  |
 | finder      | Show POSIX path in Finder title                 | com.apple.finder        | _FXShowPosixPathInTitle              | bool   | true              | Finder         | low  |
+| finder      | Set Finder new window target to Downloads       | com.apple.finder        | NewWindowTarget                      | string | PfLo              | Finder         | low  |
+| finder      | Set Finder new window target path to Downloads  | com.apple.finder        | NewWindowTargetPath                  | string | file://${HOME}/Downloads/ | Finder         | low  |
 | dock        | Set Dock tile size to 48 pixels                 | com.apple.dock          | tilesize                             | int    | 48                | Dock           | low  |
 | dock        | Use scale minimize effect                       | com.apple.dock          | mineffect                            | string | scale             | Dock           | low  |
 | dock        | Show indicators for open applications           | com.apple.dock          | show-process-indicators              | bool   | true              | Dock           | low  |
