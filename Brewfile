@@ -66,6 +66,7 @@ brew "vim"              # Vi Improved text editor
 # Language Runtimes & Version Managers
 # ====================
 brew "node"             # JavaScript runtime built on Chrome's V8
+brew "pnpm"             # Fast, disk space efficient package manager for Node.js
 brew "python@3.12"      # Python programming language (v3.12)
 brew "uv"               # Extremely fast Python package manager
 brew "go"               # Go programming language compiler
